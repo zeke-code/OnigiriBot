@@ -1,0 +1,35 @@
+{
+  "name": "onigiribot",
+  "version": "1.0.0",
+  "description": "An open source, lightweight, do-it-all Discord bot with a web UI!",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "lint": "eslint src/**/*.{js,jsx}",
+    "lint_fix": "eslint src/**/*.{js,jsx} --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zeke-code/OnigiriBot.git"
+  },
+  "author": "zeke-code",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/zeke-code/OnigiriBot/issues"
+  },
+  "homepage": "https://github.com/zeke-code/OnigiriBot#readme",
+  "dependencies": {
+    "@discordjs/voice": "^0.16.1",
+    "@evan/opus": "^1.0.2",
+    "discord-player": "^6.6.6",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "ytdl-core": "^4.11.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.53.0",
+    "eslint-config-google": "^0.14.0",
+    "nodemon": "^3.0.1"
+  }
+}
