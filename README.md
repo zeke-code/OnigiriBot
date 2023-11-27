@@ -45,7 +45,7 @@ Follow this procedure to install the bot and run it locally on your machine.
 
 1. **Create Your Bot**:
    - Go to the [Discord Developer Portal](https://discord.com/developers/applications).
-   - Click on “New Application”, give it a name (like OnigiriBot), and create your application.
+   - Click on “New Application”, give it a name (like OnigiriBot), and create your application. (If you don't have a profile picture to use, feel free to download the one at the top of this document and to use it)
 
 2. **Get Your Bot Token**:
    - Under the “Client Secret” section, you’ll find your bot’s token (press copy). Keep this token confidential.
