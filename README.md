@@ -1,6 +1,6 @@
-# OnigiriBot - a lightweight, simple, do-it-all Discord Bot
+# OnigiriBot - A Lightweight, Simple, Versatile Discord Bot
 
-OnigiriBot is a lightweight, do-it-all, easy to use and customizable Discord bot. It will aim to become a user-friendly bot, so that everyone can customize it and use it to their liking, even if they are not really tech savvy. At the moment, the roadmap for the bot looks like this:
+OnigiriBot is a lightweight, versatile, easy to use and customizable Discord bot. It will aim to become a user-friendly bot, so that everyone can customize it and use it to their liking, even if they are not really tech savvy. At the moment, the roadmap for the bot looks like this:
 
 **0.5: Basic commands, music player**: ✅
 
@@ -18,7 +18,7 @@ OnigiriBot is a lightweight, do-it-all, easy to use and customizable Discord bot
 
 ## Prerequisites
 
-Before you begin, ensure you have the following Prerequisites ready:
+Before you begin, ensure that you meet the following prerequisites:
 - **Node.js**: OnigiriBot requires Node.js to run. You can download it from [Node.js Official Website](https://nodejs.org/). It's recommended to use the **LTS** version. Just open the installer you downloaded and follow the installation guide.
 - **FFMPEG**: This is required for handling media streams, it's a **must** if your bot will play music or handle audio. You can download FFMPEG from the [FFMPEG Official Website](https://ffmpeg.org/download.html).
 - **A Discord Account**: To create a bot and get the necessary tokens, you'll need a Discord account. Sign up [here](https://discord.com/register) if you don't have one.
