@@ -1,4 +1,15 @@
+# Critical files containing API tokens
+
 .env
+
+# Nodes
 node_modules/
+
+# Logs
+
 combined.log
 error.log
+
+# System-generated files
+
+.DS_Store
