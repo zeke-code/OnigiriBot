@@ -1,4 +1,16 @@
-# OnigiriBot - A Lightweight, Simple, Versatile Discord Bot
+<p align="center">
+   <img src="https://github.com/zeke-code/OnigiriBot/assets/116798879/1c868e6c-dcb2-43e2-a3f7-01428f187fc9" width="600" height="600">
+</p>
+
+<h1 align="center">OnigiriBot - A Lightweight, Simple, Versatile Discord Bot</h1>
+
+<p align="center">
+  <a href="#overview">Overview</a> • 
+  <a href="#prerequisites">Prerequisites</a> • 
+   <a href="#installation">Installaion</a>
+</p>
+
+# Overview
 
 OnigiriBot is a lightweight, versatile, easy to use and customizable Discord bot. It will aim to become a user-friendly bot, so that everyone can customize it and use it to their liking, even if they are not really tech savvy. At the moment, the roadmap for the bot looks like this:
 
@@ -16,14 +28,20 @@ OnigiriBot is a lightweight, versatile, easy to use and customizable Discord bot
 
 **1.1: ...**
 
-## Prerequisites
+# Prerequisites
 
 Before you begin, ensure that you meet the following prerequisites:
 - **Node.js**: OnigiriBot requires Node.js to run. You can download it from [Node.js Official Website](https://nodejs.org/). It's recommended to use the **LTS** version. Just open the installer you downloaded and follow the installation guide.
 - **FFMPEG**: This is required for handling media streams, it's a **must** if your bot will play music or handle audio. You can download FFMPEG from the [FFMPEG Official Website](https://ffmpeg.org/download.html).
 - **A Discord Account**: To create a bot and get the necessary tokens, you'll need a Discord account. Sign up [here](https://discord.com/register) if you don't have one.
 
-## Step 1: Setting Up Your Bot
+# Installation
+
+Follow this procedure to install the bot and run it locally on your machine.
+
+
+
+## Step 1: Registering the bot on Discord and retrieving bot's token
 
 1. **Create Your Bot**:
    - Go to the [Discord Developer Portal](https://discord.com/developers/applications).
@@ -33,7 +51,7 @@ Before you begin, ensure that you meet the following prerequisites:
    - Under the “Client Secret” section, you’ll find your bot’s token (press copy). Keep this token confidential.
    - Save this token somewhere safe (a .txt file for the moment will do), as you'll need it for your bot's configuration.
 
-## Step 2: Cloning the Repository and installing dependencies
+## Step 2: Cloning the epository and installing dependencies
 
 Clone the OnigiriBot repository to your local machine using through the cmd:
 ```sh
@@ -50,7 +68,7 @@ npm install
 this will install the dependencies needed for the project.
 
 
-## Step 4: Configuration
+## Step 3: Configuration
 
 Create a `.env` file in the **config** folder of the OnigiriBot directory.
 Add the following line to the `.env` file, replacing `YOUR_BOT_TOKEN` with the token you obtained from the Discord Developer Portal:
@@ -60,7 +78,7 @@ Add the following line to the `.env` file, replacing `YOUR_BOT_TOKEN` with the t
 Save the file and we're almost good to go!
 
 
-## Step 5: Running OnigiriBot
+## Step 4: Running OnigiriBot
 
 Run your bot by opening a cmd inside the root directory, and use the following command:
 ```sh
