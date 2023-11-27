@@ -75,8 +75,9 @@ this will install the dependencies needed for the project.
 
 ## Step 3: Configuration
 
-Create a `.env` file in the **config** folder of the OnigiriBot directory.
-Add the following line to the `.env` file, replacing `YOUR_BOT_TOKEN` with the token you obtained from the Discord Developer Portal:
+Create a `config` folder at the root of the OnigiriBot directory (open the OnigiriBot directory and create a new folder named **config**).
+Create a `.env` file and place it in the **config** folder of the OnigiriBot directory.
+Open the `.env` with any kind of text editor and add the following line to the `.env` file, replacing `YOUR_BOT_TOKEN` with the token you obtained from the Discord Developer Portal:
 
 `DISCORD_TOKEN=YOUR_BOT_TOKEN`
 
@@ -90,7 +91,11 @@ Run your bot by opening a cmd inside the root directory, and use the following c
 node index.js
 ```
 
-If everything is set up correctly, OnigiriBot should now be running and accessible on your Discord server.
+If everything is set up correctly, OnigiriBot should now be running. On the console, you should see something like this:
+```console
+$ node index.js
+Ready! Logged in as OnigiriBot#3212
+```
 
 ## Adding OnigiriBot to Your Server
 
