@@ -13,7 +13,8 @@
 
 # Overview
 
-OnigiriBot is a lightweight, versatile, easy to use and customizable Discord bot. It will aim to become a user-friendly bot, so that everyone can customize it and use it to their liking, even if they are not really tech savvy. At the moment, the roadmap for the bot looks like this:
+OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord bot, ideal for both tech-savvy users and those less familiar with technology. My goal for OnigiriBot is to evolve it into a platform that not only simplifies interactions within Discord but also extends its usability through a web UI. This upcoming feature aims to provide an intuitive and accessible interface, making customization and management of the bot easy for all users. Currently, OnigiriBot is on a developmental journey, with a roadmap that outlines its evolving features and capabilities. Check out the roadmap below.
+
 ## Roadmap
 
 - [x] **0.5: Basic commands, music player**
@@ -29,7 +30,7 @@ OnigiriBot is a lightweight, versatile, easy to use and customizable Discord bot
 - [ ] **1.0: Database integration, Bot sharding**
   - ❌ Major milestone that will introduce robust backend improvements.
 - [ ] **1.1: ...**
-  - Further updates and features to be announced.
+  - Further updates, web UI, and features to be announced.
 
 
 # Prerequisites
