@@ -5,7 +5,7 @@ const logger = require('../../utils/logger');
 module.exports = {
     data: new SlashCommandBuilder()
             .setName('stop')
-            .setDescription('Makes me stop playing music!'),
+            .setDescription('Makes me stop playing music and deletes current playlist!'),
         async execute(interaction) {
             const player = useMainPlayer();
             const guildQueue = player.nodes.get(interaction.guildId);

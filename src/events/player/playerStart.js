@@ -5,17 +5,26 @@ const player = useMainPlayer();
 
 
 player.events.on('playerStart', (queue, track) => {
+
   const skipButton = new ButtonBuilder()
       .setCustomId('skip')
+      .setStyle(ButtonStyle.Secondary)
       .setLabel('⏭️');
 
-  const pauseResume = new ButtonBuilder()
+  const pauseResumeButton = new ButtonBuilder()
       .setCustomId('pauseresume')
+      .setStyle(ButtonStyle.Secondary)
       .setLabel('⏯️');
 
+    const stopButton = new ButtonBuilder()
+    .setCustomId('stop')
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel('⏹️');
+
   const row = new ActionRowBuilder()
-      .addComponents(pauseResume)
-      .addComponents(skipButton);
+      .addComponents(pauseResumeButton)
+      .addComponents(skipButton)
+      .addComponents(stopButton);
 
   const embed = new EmbedBuilder()
       .setURL(track.url)
@@ -24,7 +33,8 @@ player.events.on('playerStart', (queue, track) => {
       .addFields(
           {name: `Now playing in ${queue.channel.name}`, value: `Requested by ${queue.metadata.requestedBy}`},
           {name: `Duration`, value: `${track.duration}`},
+          {name: 'Control Panel', value: `${row}`}
       )
       .setColor('#ffffff');
-  queue.metadata.channel.send({embeds: [embed]});
+  queue.metadata.channel.send({embeds: [embed], components: [row]});
 });
