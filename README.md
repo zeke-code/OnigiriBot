@@ -7,26 +7,30 @@
 <p align="center">
   <a href="#overview">Overview</a> • 
   <a href="#prerequisites">Prerequisites</a> • 
-   <a href="#installation">Installaion</a>
+   <a href="#installation">Installation</a> • 
+   <a href="#roadmap">Roadmap</a>
 </p>
 
 # Overview
 
 OnigiriBot is a lightweight, versatile, easy to use and customizable Discord bot. It will aim to become a user-friendly bot, so that everyone can customize it and use it to their liking, even if they are not really tech savvy. At the moment, the roadmap for the bot looks like this:
+## Roadmap
 
-**0.5: Basic commands, music player**: ✅
+- [x] **0.5: Basic commands, music player**
+  - ✅ The foundation of the bot with essential music playing capabilities.
+- [ ] **0.6: Introduction of new fun commands, and a better music player**
+  - ❌ Upcoming features including new commands and an enhanced music player.
+- [ ] **0.7: Introduction of moderation commands and features**
+  - ❌ Planned moderation tools to manage community interactions.
+- [ ] **0.8: Introduction of customizable messages, shoutouts, and communication features**
+  - ❌ Future update to include personalized messages and community engagement features.
+- [ ] **0.9: Refactoring code, improvements to existing features, simpler installation process**
+  - ❌ Improving code quality and user experience in a future release.
+- [ ] **1.0: Database integration, Bot sharding**
+  - ❌ Major milestone that will introduce robust backend improvements.
+- [ ] **1.1: ...**
+  - Further updates and features to be announced.
 
-**0.6: Introduction of new fun commands, and a better music player**: ❌
-
-**0.7: Introduction of moderation commands and features**: ❌
-
-**0.8: Introduction of customizable messages, shoutouts, and communication features:** ❌
-
-**0.9: Refactoring code, improvements to existing features, simpler installation process: ❌**
-
-**1.0: Database integration, Bot sharding**: ❌
-
-**1.1: ...**
 
 # Prerequisites
 
