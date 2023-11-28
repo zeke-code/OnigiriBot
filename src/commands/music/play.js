@@ -1,4 +1,4 @@
-const {SlashCommandBuilder} = require('discord.js');
+const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
 const {useMainPlayer, QueryType} = require('discord-player');
 const logger = require('../../utils/logger');
 
@@ -47,6 +47,15 @@ module.exports = {
       console.log('Playback of a song failed. Returning.');
       return interaction.followUp('Something went wrong while trying to queue your song. Try again in a bit.');
     }
-    await interaction.followUp(`**${result.playlist ? result.playlist.title + ' playlist' : result.tracks[0]}** enqueued under **${interaction.member}**'s request!`);
+
+    const userAvatar = interaction.member.displayAvatarURL({ dynamic: true, size: 1024 });
+
+    const Embed = new EmbedBuilder()
+                  .setAuthor({
+                    name: `${interaction.member.user.username}`,
+                    iconURL: userAvatar
+                  })
+                  .setDescription(`**${interaction.member.user.username}** added **${result.playlist ? result.tracks + ' playlist' : result.tracks[0]}**`)
+    await interaction.followUp({embeds: [Embed]})
   },
 };

@@ -16,6 +16,7 @@ module.exports = {
     if(!queue) return interaction.reply({content: 'No queue found for this server.', ephemeral: true});
     const currentTrack = queue.currentTrack;
     queue.node.skip();
+    if(queue.isEmpty()) queue.delete();
     await interaction.reply(`Skipped **${currentTrack}** under **${interaction.member}**'s request successfully.`)
   },
 };
