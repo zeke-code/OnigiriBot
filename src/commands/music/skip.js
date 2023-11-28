@@ -1,4 +1,4 @@
-const {SlashCommandBuilder} = require('discord.js');
+const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
 const {useMainPlayer, GuildNodeManager} = require('discord-player');
 
 module.exports = {
@@ -17,6 +17,16 @@ module.exports = {
     const currentTrack = queue.currentTrack;
     queue.node.skip();
     if(queue.isEmpty()) queue.delete();
-    await interaction.reply(`Skipped **${currentTrack}** under **${interaction.member}**'s request successfully.`)
+
+    const userAvatar = interaction.member.displayAvatarURL({ dynamic: true, size: 1024 });
+
+    const embed = new EmbedBuilder()
+                  .setAuthor({
+                    name: `${interaction.member.user.username}`,
+                    iconURL: userAvatar
+                  })
+                  .setDescription(`**${queue.metadata.requestedBy}** skipped **${currentTrack}**`)
+
+    await queue.metadata.channel.send({embeds: [embed]});
   },
 };

@@ -1,5 +1,5 @@
 const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
-const {useMainPlayer, QueryType} = require('discord-player');
+const {useMainPlayer, QueryType, useQueue} = require('discord-player');
 const logger = require('../../utils/logger');
 
 module.exports = {
