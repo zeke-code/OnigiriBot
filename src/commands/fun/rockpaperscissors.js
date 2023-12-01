@@ -11,6 +11,20 @@ function randomChoice(options) {
 }
 
 /**
+ * Retrieves emoji based on which button was pressed in the embed
+ * @param {String} choice 
+ * @return {String}
+ */
+function getEmoji(choice) {
+  const emojis = {
+    rock: '🪨', // Emoji for rock
+    paper: '📄', // Emoji for paper
+    scissors: '✂️', // Emoji for scissors
+  };
+  return emojis[choice] || '';
+}
+
+/**
  * Builds and returns an end game embed for rock paper scissors game
  * @param {String} winnerName
  * @param {String} loserName
@@ -37,17 +51,17 @@ module.exports = {
   async execute(interaction) {
     const rock = new ButtonBuilder()
         .setCustomId('rock')
-        .setLabel('Play Rock!')
-        .setStyle(ButtonStyle.Danger);
+        .setLabel('Play Rock!🪨')
+        .setStyle(ButtonStyle.Primary);
 
     const paper = new ButtonBuilder()
         .setCustomId('paper')
-        .setLabel('Play Paper!')
+        .setLabel('Play Paper!📄')
         .setStyle(ButtonStyle.Secondary);
 
     const scissors = new ButtonBuilder()
         .setCustomId('scissors')
-        .setLabel('Play Scissors!')
+        .setLabel('Play Scissors!✂️')
         .setStyle(ButtonStyle.Success);
 
     const row = new ActionRowBuilder()
@@ -56,7 +70,7 @@ module.exports = {
         .addComponents(scissors);
 
     const response = await interaction.reply({
-      content: `I will beat you! Come on, pick something!`,
+      content: `You dare challenge me, ${interaction.member}? Come on, pick something!`,
       components: [row],
     });
 
@@ -96,8 +110,8 @@ module.exports = {
             .setColor('#0099ff')
             .setTitle('Rock, Paper, Scissors Game')
             .addFields(
-                {name: `${userName} Choice`, value: confirmation.customId, inline: true},
-                {name: 'Bot\'s Choice', value: botChoice, inline: true},
+                {name: `${userName} Choice`, value: `${confirmation.customId}${getEmoji(confirmation.customId)}`, inline: true},
+                {name: 'Bot\'s Choice', value: `${botChoice}${getEmoji(botChoice)}`, inline: true},
                 {name: 'Round Result', value: result.message, inline: false},
                 {name: `${userName} Score`, value: `${userScore}`, inline: true},
                 {name: 'Bot Score', value: `${botScore}`, inline: true},
