@@ -13,35 +13,42 @@ module.exports = {
   async execute(interaction) {
     const player = useMainPlayer();
     if (!interaction.member.voice.channel) return interaction.reply({content: 'You need to be connected to a voice channel to use this command.', ephemeral: true});
+    if (interaction.guild.members.me.voice.channelId && interaction.member.voice.channelId !== interaction.guild.members.me.voice.channelId) {
+      return interaction.reply({content: 'You are not in my voice channel!', ephemeral: true});
+    }
     await interaction.deferReply();
     const query = interaction.options.getString('song', true);
+    let queue = useQueue(interaction.guildId);
 
-    const guildQueue = player.nodes.create(interaction.guild, {
+    if (!queue) {
+    queue = player.nodes.create(interaction.guild, {
       metadata: {
         voiceChannel: interaction.member.voice.channel,
         channel: interaction.channel,
         requestedBy: interaction.user,
       },
-    });
+    })
+  };
 
     const result = await player.search(query, {
       searchEngine: QueryType.AUTO
     })
     .catch(e => logger.error(`Error while trying to search ${query}`));
-    if (!result) return interaction.reply({content: 'Results not found for your request. Try again!', ephemeral: true});
+    if (!result) return interaction.followUp({content: 'Results not found for your request. Try again!', ephemeral: true});
+    if(result.tracks[0] === undefined) return interaction.followUp('There was an error trying to accomplish your request. Try with a different playlist or song.');
 
     try {
-      if (!guildQueue.connection) await guildQueue.connect(interaction.member.voice.channel)
+      if (!queue.connection) await queue.connect(interaction.member.voice.channel)
   } catch (e){
-      guildQueue.delete();
+      queue.delete();
       await interaction.followUp({content: 'Something went wrong while trying to connect to your voice channel. Try again!', ephemeral: true});
       logger.error(`Error while trying to connect to voice channel of guild ${interaction.guildId}: ${e}`)
   }
 
     try {
-      guildQueue.addTrack(result.playlist ? result.tracks : result.tracks[0])
+      queue.addTrack(result.playlist ? result.tracks : result.tracks[0])
       logger.info(`Song enqueuing successful for ${query}`);
-      if(!guildQueue.isPlaying()) await guildQueue.node.play();
+      if(!queue.isPlaying()) await queue.node.play();
     } catch (e) {
       logger.error(`Something went wrong while trying to use play command: ${e}`);
       console.log('Playback of a song failed. Returning.');
@@ -55,7 +62,7 @@ module.exports = {
                     name: `${interaction.member.user.username}`,
                     iconURL: userAvatar
                   })
-                  .setDescription(`**${interaction.member.user.username}** added **${result.playlist ? result.tracks + ' playlist' : result.tracks[0]}**`)
+                  .setDescription(`**${interaction.member.user.username}** added **${result.playlist ? result.playlist.title + ' playlist' : result.tracks[0]}**`)
     await interaction.followUp({embeds: [Embed]})
   },
 };

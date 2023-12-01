@@ -32,7 +32,14 @@ player.events.on('playerStart', async(queue, track) => {
     .setLabel('Shuffle')
     .setEmoji('🔀');
 
+    const previousButton = new ButtonBuilder()
+    .setCustomId('previous')
+    .setStyle(ButtonStyle.Secondary)
+    .setLabel('Previous')
+    .setEmoji('⏮️')
+
   const row = new ActionRowBuilder()
+      .addComponents(previousButton)  
       .addComponents(pauseResumeButton)
       .addComponents(skipButton)
       .addComponents(stopButton)

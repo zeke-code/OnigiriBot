@@ -4,6 +4,7 @@ const pauseCommand = require('../../commands/music/pause');
 const skipCommand = require('../../commands/music/skip');
 const stopCommand = require('../../commands/music/stop');
 const shuffleCommand = require('../../commands/music/shuffle');
+const previousCommand = require('../../commands/music/previous');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -24,6 +25,8 @@ module.exports = {
         break;
       case 'shuffle':
         await shuffleCommand.execute(interaction);
+      case 'previous':
+        await previousCommand.execute(interaction);
     }
     
   },
