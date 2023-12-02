@@ -62,6 +62,7 @@ module.exports = {
                     name: `${interaction.member.user.username}`,
                     iconURL: userAvatar
                   })
+                  .setThumbnail(`${result.playlist ? result.playlist.thumbnail : result.tracks[0].thumbnail}`)
                   .setDescription(`**${interaction.member.user.username}** added **${result.playlist ? result.playlist.title + ' playlist' : result.tracks[0]}**`)
     await interaction.followUp({embeds: [Embed]})
   },

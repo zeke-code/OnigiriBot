@@ -1,4 +1,3 @@
-// buttonInteractionHandler.js
 const {Events} = require('discord.js');
 const pauseCommand = require('../../commands/music/pause');
 const skipCommand = require('../../commands/music/skip');
