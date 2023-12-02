@@ -25,8 +25,10 @@ module.exports = {
         break;
       case 'shuffle':
         await shuffleCommand.execute(interaction);
+        break;
       case 'previous':
         await previousCommand.execute(interaction);
+        break;
     }
     
   },
