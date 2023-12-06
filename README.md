@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="https://github.com/zeke-code/OnigiriBot/assets/116798879/1c868e6c-dcb2-43e2-a3f7-01428f187fc9" width="600" height="600">
+   <img src="https://github.com/zeke-code/OnigiriBot/assets/116798879/1c868e6c-dcb2-43e2-a3f7-01428f187fc9" width="600" height="500">
 </p>
 
 <h1 align="center">OnigiriBot - A Lightweight, Simple, Versatile Discord Bot</h1>
@@ -50,13 +50,13 @@ Follow this procedure to install the bot and run it locally on your machine.
 
 1. **Create Your Bot**:
    - Go to the [Discord Developer Portal](https://discord.com/developers/applications).
-   - Click on “New Application”, give it a name (like OnigiriBot), and create your application. (If you don't have a profile picture to use, feel free to download the one at the top of this document and to use it)
+   - Click on “New Application”, give it a name (like OnigiriBot), and create your application. (If you don't have a profile picture to use, feel free to download the one at the top of this document)
 
 2. **Get Your Bot Token**:
    - Under the “Client Secret” section, you’ll find your bot’s token (press copy). Keep this token confidential.
-   - Save this token somewhere safe (a .txt file for the moment will do), as you'll need it for your bot's configuration.
+   - Save this token somewhere safe (a .txt file is enough), as you'll need it for your bot's configuration.
 
-## Step 2: Cloning the epository and installing dependencies
+## Step 2: Cloning the repository and installing dependencies
 
 Clone the OnigiriBot repository to your local machine using through the cmd:
 ```sh
