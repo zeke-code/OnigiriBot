@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="https://github.com/zeke-code/OnigiriBot/assets/116798879/1c868e6c-dcb2-43e2-a3f7-01428f187fc9" width="600" height="500">
+   <img src="https://github.com/zeke-code/OnigiriBot/assets/116798879/1c868e6c-dcb2-43e2-a3f7-01428f187fc9" width="400" height="400">
 </p>
 
 <h1 align="center">OnigiriBot - A Lightweight, Simple, Versatile Discord Bot</h1>
