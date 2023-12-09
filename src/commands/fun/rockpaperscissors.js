@@ -1,4 +1,4 @@
-const {SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Embed} = require('discord.js');
+const {SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder} = require('discord.js');
 
 /**
  * Picks a random element from an array of options
@@ -12,7 +12,7 @@ function randomChoice(options) {
 
 /**
  * Retrieves emoji based on which button was pressed in the embed
- * @param {String} choice 
+ * @param {String} choice
  * @return {String}
  */
 function getEmoji(choice) {

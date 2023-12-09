@@ -29,6 +29,5 @@ module.exports = {
         await previousCommand.execute(interaction);
         break;
     }
-    
   },
 };

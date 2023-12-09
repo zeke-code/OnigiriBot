@@ -4,8 +4,8 @@ const player = useMainPlayer();
 
 
 player.events.on('playerSkip', (queue, track) => {
-    try {
-    } catch (e) {
-        logger.error(`Tried to skip song but this happened: ${e}`);
-    }
+  try {
+  } catch (e) {
+    logger.error(`Tried to skip song but this happened: ${e}`);
+  }
 });
