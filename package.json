@@ -21,6 +21,7 @@
   "dependencies": {
     "@discordjs/voice": "^0.16.1",
     "@evan/opus": "^1.0.2",
+    "axios": "^1.6.2",
     "discord-player": "^6.6.6",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",

@@ -8,6 +8,7 @@ module.exports = {
       .addStringOption((option) =>
         option.setName('message')
             .setDescription('Your anonymous message!')
+            .setMaxLength(500)
             .setRequired(true)),
 
   async execute(interaction) {
