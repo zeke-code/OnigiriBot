@@ -1,4 +1,4 @@
-const {SlashCommandBuilder} = require('discord.js');
+const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
 
 const responses = [
   'It is certain.',
@@ -35,6 +35,19 @@ module.exports = {
   async execute(interaction) {
     const question = interaction.options.getString('question');
     const response = responses[Math.floor(Math.random() * responses.length)];
-    await interaction.reply(`Your question is: **${question}**\nAnswer: **${response}**`);
+
+    const embed = new EmbedBuilder()
+        .setColor('White')
+        .setAuthor({
+          name: 'OnigiriBot',
+          iconURL: 'https://i.ibb.co/bFJ5GC1/Oni-Avatar.png',
+        })
+        .setTitle(`🎱 8Ball with ${interaction.member.user.displayName}`)
+        .addFields({name: 'Question: ', value: `${question}`},
+            {name: 'Response: ', value: `${response}`});
+
+    await interaction.reply({embeds: [embed]});
+
+    // await interaction.reply(`Your question is: **${question}**\nAnswer: **${response}**`);
   },
 };

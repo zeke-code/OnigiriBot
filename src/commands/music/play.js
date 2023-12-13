@@ -59,11 +59,11 @@ module.exports = {
 
     const Embed = new EmbedBuilder()
         .setAuthor({
-          name: `${interaction.member.user.username}`,
+          name: `${interaction.member.user.displayName}`,
           iconURL: userAvatar,
         })
         .setThumbnail(`${result.playlist ? result.playlist.thumbnail : result.tracks[0].thumbnail}`)
-        .setDescription(`**${interaction.member.user.username}** added **${result.playlist ? result.playlist.title + ' playlist' : result.tracks[0]}**`);
+        .setDescription(`**${interaction.user}** added **${result.playlist ? result.playlist.title + ' playlist' : result.tracks[0]}**`);
     await interaction.followUp({embeds: [Embed]});
   },
 };
