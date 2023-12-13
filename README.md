@@ -19,8 +19,8 @@ OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord
 
 - [x] **0.5: Basic commands, music player**
   - ✅ The foundation of the bot with essential music playing capabilities.
-- [ ] **0.6: Introduction of new fun commands, and a better music player**
-  - ❌ Upcoming features including new commands and an enhanced music player.
+- [x] **0.6: Introduction of new fun commands, and a better music player**
+  - ✅ Added cat, whisper, nsfw commands, and an improved music player with multiple functionalities.
 - [ ] **0.7: Introduction of moderation commands and features**
   - ❌ Planned moderation tools to manage community interactions.
 - [ ] **0.8: Introduction of customizable messages, shoutouts, and communication features**
