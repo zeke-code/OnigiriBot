@@ -5,10 +5,10 @@ const logger = require('../../utils/logger');
 module.exports = {
   data: new SlashCommandBuilder()
       .setName('play')
-      .setDescription('Play music by writing the link/name of the song!')
+      .setDescription('Play music by writing the link/name/lyrics of a song/playlist!')
       .addStringOption((option) =>
-        option.setName('song')
-            .setDescription('I\'ll search for the title you provide me! (Links supported as well!)')
+        option.setName('query')
+            .setDescription('I\'ll search for a song/playlist based on your query (links, song title, lyrics...)!')
             .setRequired(true)),
   async execute(interaction) {
     const player = useMainPlayer();
@@ -17,7 +17,7 @@ module.exports = {
       return interaction.reply({content: 'You are not in my voice channel!', ephemeral: true});
     }
     await interaction.deferReply();
-    const query = interaction.options.getString('song', true);
+    const query = interaction.options.getString('query', true);
     let queue = useQueue(interaction.guildId);
 
     if (!queue) {
