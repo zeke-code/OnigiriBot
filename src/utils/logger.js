@@ -1,16 +1,19 @@
 const winston = require('winston');
 const fs = require('fs');
+const path = require('path');
 
-// Log file paths
-const errorLogPath = 'error.log';
-const combinedLogPath = 'combined.log';
+const logDir = path.join(__dirname, '../../logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
+
+const errorLogPath = path.join(__dirname, '../../logs/error.log');
+const combinedLogPath = path.join(__dirname, '../../logs/combined.log');
 
 // Function to reset log files
 const resetLogFile = (filePath) => {
-  fs.writeFileSync(filePath, ''); // Overwrites the file with empty content
+  fs.writeFileSync(filePath, '');
 };
-
-// Reset log files at startup
 resetLogFile(errorLogPath);
 resetLogFile(combinedLogPath);
 
