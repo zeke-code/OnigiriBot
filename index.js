@@ -1,7 +1,4 @@
 const path = require('node:path');
-const logger = require('./src/utils/logger');
-const {commandLoader} = require('./loaders/commandLoader');
-const {eventLoader} = require('./loaders/eventLoader');
 const {Client, Collection, GatewayIntentBits} = require('discord.js');
 const {Player} = require('discord-player');
 const loadCommands = require('./loaders/commandLoader');
