@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.js & node src/utils/deploy-commands.js",
-    "lint": "eslint src/**/*.{js,jsx}",
-    "lint_fix": "eslint src/**/*.{js,jsx} --fix"
+    "lint_check": "eslint src/**/*.js",
+    "lint": "eslint src/**/*.js --fix"
   },
   "repository": {
     "type": "git",
