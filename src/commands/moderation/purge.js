@@ -15,7 +15,7 @@ module.exports = {
                     const amount = interaction.options.getInteger('amount', true);
 
                     if (amount <= 0 || amount > 100) {
-                        return interaction.reply({content: 'The amount needs to be between 0 and 100', ephemeral: true});
+                        return interaction.reply({content: 'The amount needs to be between 0 and 100!', ephemeral: true});
                     } else {
                             const channel = interaction.channel;
                             channel.bulkDelete(amount, true)

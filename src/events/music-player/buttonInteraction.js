@@ -1,9 +1,12 @@
 const {Events} = require('discord.js');
-const pauseCommand = require('../../commands/music/pause');
-const skipCommand = require('../../commands/music/skip');
-const stopCommand = require('../../commands/music/stop');
-const shuffleCommand = require('../../commands/music/shuffle');
-const previousCommand = require('../../commands/music/previous');
+const commands = {
+  pauseresume: require('../../commands/music/pause'),
+  skip: require('../../commands/music/skip'),
+  stop: require('../../commands/music/stop'),
+  shuffle: require('../../commands/music/shuffle'),
+  previous: require('../../commands/music/previous'),
+  volume: require('../../commands/music/volume'),
+};
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -11,23 +14,10 @@ module.exports = {
     if (!interaction.isButton()) return;
 
     const buttonId = interaction.customId;
+    const command = commands[buttonId];
 
-    switch (buttonId) {
-      case 'pauseresume':
-        await pauseCommand.execute(interaction);
-        break;
-      case 'skip':
-        await skipCommand.execute(interaction);
-        break;
-      case 'stop':
-        await stopCommand.execute(interaction);
-        break;
-      case 'shuffle':
-        await shuffleCommand.execute(interaction);
-        break;
-      case 'previous':
-        await previousCommand.execute(interaction);
-        break;
+    if (command) {
+      await command.execute(interaction);
     }
   },
 };
