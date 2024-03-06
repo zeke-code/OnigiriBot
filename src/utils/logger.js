@@ -10,7 +10,6 @@ if (!fs.existsSync(logDir)) {
 const errorLogPath = path.join(__dirname, '../../logs/error.log');
 const combinedLogPath = path.join(__dirname, '../../logs/combined.log');
 
-// Function to reset log files
 const resetLogFile = (filePath) => {
   fs.writeFileSync(filePath, '');
 };
