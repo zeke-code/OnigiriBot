@@ -22,11 +22,11 @@ OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord
 - [x] **0.6: Introduction of new fun commands, and a better music player**
   - ✅ Added cat, whisper, nsfw commands, and an improved music player with multiple functionalities.
 - [ ] **0.7: Introduction of moderation commands and database integration**
-  - ❌ Planned moderation tools to manage community interactions and the integration of a database.
-- [ ] **0.8: Introduction of customizable messages, shoutouts, and communication features**
-  - ❌ Future update to include personalized messages and community engagement features.
-- [ ] **0.9: Refactoring code, improvements to existing features, simpler installation process**
-  - ❌ Improving code quality and user experience in a future release. Docker installation is set to be released in this version.
+  - ❌ Planned moderation tools to manage community interactions and the integration of a database (MongoDB).
+- [ ] **0.8: Introduction of customizable messages, shoutouts, and communication features. Simpler installation process.**
+  - ❌ Future update to include personalized messages and community engagement features. Docker installation is set to be in this release.
+- [ ] **0.9: Refactoring code, improvements to existing features**
+  - ❌ Improving code quality and user experience in this release.
 - [ ] **1.0: Bot sharding, web UI**
   - ❌ Major milestone that will introduce robust backend improvements and a web UI.
 - [ ] **1.1: ...**
