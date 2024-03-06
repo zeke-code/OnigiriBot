@@ -37,12 +37,21 @@ player.events.on('playerStart', async (queue, track) => {
       .setLabel('Previous')
       .setEmoji('⏮️');
 
+  const volumeButton = new ButtonBuilder()
+      .setCustomId('volume')
+      .setStyle(ButtonStyle.Secondary)
+      .setLabel('Volume')
+      .setEmoji('🔊')
+
   const row = new ActionRowBuilder()
       .addComponents(previousButton)
       .addComponents(pauseResumeButton)
       .addComponents(skipButton)
       .addComponents(stopButton)
-      .addComponents(shuffleButton);
+      .addComponents(shuffleButton)
+  
+  const secondRow = new ActionRowBuilder()
+      .addComponents(volumeButton)
 
   const embed = new EmbedBuilder()
       .setURL(track.url)
@@ -69,6 +78,6 @@ player.events.on('playerStart', async (queue, track) => {
       embedMessageId = null;
     }
   }
-  const sentMessage = await queue.metadata.channel.send({embeds: [embed], components: [row]});
+  const sentMessage = await queue.metadata.channel.send({embeds: [embed], components: [row, secondRow]});
   embedMessageId = sentMessage.id;
 });
