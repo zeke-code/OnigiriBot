@@ -26,7 +26,7 @@ OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord
 - [ ] **0.8: Introduction of customizable messages, shoutouts, and communication features**
   - ❌ Future update to include personalized messages and community engagement features.
 - [ ] **0.9: Refactoring code, improvements to existing features, simpler installation process**
-  - ❌ Improving code quality and user experience in a future release.
+  - ❌ Improving code quality and user experience in a future release. Docker installation is set to be released in this version.
 - [ ] **1.0: Bot sharding, web UI**
   - ❌ Major milestone that will introduce robust backend improvements and a web UI.
 - [ ] **1.1: ...**
