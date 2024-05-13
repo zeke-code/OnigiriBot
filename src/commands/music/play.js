@@ -62,8 +62,12 @@ module.exports = {
           name: `${interaction.member.user.displayName}`,
           iconURL: userAvatar,
         })
-        .setThumbnail(`${result.playlist ? result.playlist.thumbnail : result.tracks[0].thumbnail}`)
         .setDescription(`**${interaction.user}** added **${result.playlist ? result.playlist.title + ' playlist' : result.tracks[0]}**`);
+
+      const thumbnailUrl = result.playlist ? result.playlist.thumbnail : result.tracks[0].thumbnail;
+      if (thumbnailUrl && thumbnailUrl.trim() !== '') {
+        Embed.setThumbnail(thumbnailUrl);
+      }
     await interaction.followUp({embeds: [Embed]});
   },
 };

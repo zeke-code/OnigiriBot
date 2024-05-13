@@ -55,7 +55,6 @@ player.events.on('playerStart', async (queue, track) => {
 
   const embed = new EmbedBuilder()
       .setURL(track.url)
-      .setThumbnail(track.thumbnail)
       .setTitle(`${track.title}`)
       .setAuthor({
         name: 'OnigiriBot',
@@ -66,6 +65,10 @@ player.events.on('playerStart', async (queue, track) => {
           {name: `Duration`, value: `${track.duration}`, inline: true},
       )
       .setColor('#ffffff');
+
+      if (track.thumbnail && track.thumbnail.trim() !== '') {
+        embed.setThumbnail(track.thumbnail);
+      }
 
 
   if (embedMessageId) {

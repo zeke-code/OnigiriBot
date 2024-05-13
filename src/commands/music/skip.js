@@ -20,12 +20,15 @@ module.exports = {
       const userAvatar = interaction.member.displayAvatarURL({dynamic: true, size: 1024});
 
       const embed = new EmbedBuilder()
-          .setThumbnail(currentTrack.thumbnail)
           .setAuthor({
             name: `${interaction.member.user.username}`,
             iconURL: userAvatar,
           })
-          .setDescription(`**${queue.metadata.requestedBy}** skipped **${currentTrack}**`);
+          .setDescription(`**${interaction.member}** skipped **${currentTrack}**`);
+      
+      if (track.thumbnail && track.thumbnail.trim() !== '') {
+        embed.setThumbnail(track.thumbnail);
+      }
 
       await interaction.reply({embeds: [embed]});
     } catch (e) {
