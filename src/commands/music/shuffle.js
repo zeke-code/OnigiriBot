@@ -1,11 +1,11 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { useQueue } = require("discord-player");
-const logger = require("../../utils/logger");
+const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
+const {useQueue} = require('discord-player');
+const logger = require('../../utils/logger');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("shuffle")
-    .setDescription("Shuffles the current playlist!"),
+      .setName('shuffle')
+      .setDescription('Shuffles the current playlist!'),
   async execute(interaction) {
     if (
       interaction.guild.members.me.voice.channelId &&
@@ -13,16 +13,17 @@ module.exports = {
         interaction.guild.members.me.voice.channelId
     ) {
       return interaction.reply({
-        content: "You are not in my voice channel!",
+        content: 'You are not in my voice channel!',
         ephemeral: true,
       });
     }
     const queue = useQueue(interaction.guildId);
-    if (!queue)
+    if (!queue) {
       return await interaction.reply({
-        content: "There is no active playlist in this server.",
+        content: 'There is no active playlist in this server.',
         ephemeral: true,
       });
+    }
 
     const userAvatar = interaction.member.displayAvatarURL({
       dynamic: true,
@@ -30,11 +31,11 @@ module.exports = {
     });
 
     const embed = new EmbedBuilder()
-      .setAuthor({
-        name: `${interaction.member.user.displayName}`,
-        iconURL: userAvatar,
-      })
-      .setColor("Purple");
+        .setAuthor({
+          name: `${interaction.member.user.displayName}`,
+          iconURL: userAvatar,
+        })
+        .setColor('Purple');
 
     try {
       if (queue.isShuffling) {
@@ -44,13 +45,13 @@ module.exports = {
         queue.toggleShuffle();
         embed.setDescription(`${interaction.member} enabled shuffle mode!`);
       }
-      return await interaction.reply({ embeds: [embed] });
+      return await interaction.reply({embeds: [embed]});
     } catch (e) {
       logger.error(
-        `Something went wrong while trying to toggle shuffle in guild ${interaction.guildId}: ${e}`
+          `Something went wrong while trying to toggle shuffle in guild ${interaction.guildId}: ${e}`,
       );
       return await interaction.reply(
-        `Something went wrong while trying to toggle shuffle. Try again!`
+          `Something went wrong while trying to toggle shuffle. Try again!`,
       );
     }
   },

@@ -7,17 +7,11 @@ if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
 
-const errorLogPath = path.join(__dirname, '../../logs/error.log');
-const combinedLogPath = path.join(__dirname, '../../logs/combined.log');
-
-const resetLogFile = (filePath) => {
-  fs.writeFileSync(filePath, '');
-};
-resetLogFile(errorLogPath);
-resetLogFile(combinedLogPath);
+const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+const logFilePath = path.join(logDir, `log-${timestamp}.log`);
 
 const logger = winston.createLogger({
-  level: 'info',
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
       winston.format.timestamp({
         format: 'YYYY-MM-DD HH:mm:ss',
@@ -27,16 +21,18 @@ const logger = winston.createLogger({
       winston.format.json(),
   ),
   defaultMeta: {service: 'OnigiriBot'},
-  transports: [
-    new winston.transports.File({filename: errorLogPath, level: 'error'}),
-    new winston.transports.File({filename: combinedLogPath}),
-  ],
+  transports: [new winston.transports.File({filename: logFilePath})],
 });
 
 if (process.env.NODE_ENV !== 'production') {
-  logger.add(new winston.transports.Console({
-    format: winston.format.simple(),
-  }));
+  logger.add(
+      new winston.transports.Console({
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple(),
+        ),
+      }),
+  );
 }
 
 module.exports = logger;

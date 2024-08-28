@@ -1,15 +1,15 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { useQueue } = require("discord-player");
-const logger = require("../../utils/logger");
+const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
+const {useQueue} = require('discord-player');
+const logger = require('../../utils/logger');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("back")
-    .setDescription("Plays the previous song in the playlist!"),
+      .setName('back')
+      .setDescription('Plays the previous song in the playlist!'),
   async execute(interaction) {
     if (!interaction.member.voice.channelId) {
       return await interaction.reply({
-        content: "You are not in a voice channel!",
+        content: 'You are not in a voice channel!',
         ephemeral: true,
       });
     }
@@ -19,23 +19,25 @@ module.exports = {
         interaction.guild.members.me.voice.channelId
     ) {
       return interaction.reply({
-        content: "You are not in my voice channel!",
+        content: 'You are not in my voice channel!',
         ephemeral: true,
       });
     }
     const queue = useQueue(interaction.guildId);
-    if (!queue)
+    if (!queue) {
       return interaction.reply({
-        content: "There doesn't seem to be any active playlist in this server.",
+        content: 'There doesn\'t seem to be any active playlist in this server.',
         ephemeral: true,
       });
+    }
 
     const previousTracks = queue.history.tracks.toArray();
-    if (!previousTracks[0])
+    if (!previousTracks[0]) {
       return interaction.reply({
-        content: "There isn't any track history for this playlist.",
+        content: 'There isn\'t any track history for this playlist.',
         ephemeral: true,
       });
+    }
 
     const userAvatar = interaction.member.displayAvatarURL({
       dynamic: true,
@@ -43,27 +45,27 @@ module.exports = {
     });
 
     const embed = new EmbedBuilder()
-      .setAuthor({
-        name: `${interaction.member.user.displayName}`,
-        iconURL: userAvatar,
-      })
-      .setDescription(
-        `**${interaction.member}** pressed the previous button. Now playing **${previousTracks[0].title}** by **${previousTracks[0].author}**`
-      )
-      .setThumbnail(previousTracks[0].thumbnail)
-      .setColor("DarkRed");
+        .setAuthor({
+          name: `${interaction.member.user.displayName}`,
+          iconURL: userAvatar,
+        })
+        .setDescription(
+            `**${interaction.member}** pressed the previous button. Now playing **${previousTracks[0].title}** by **${previousTracks[0].author}**`,
+        )
+        .setThumbnail(previousTracks[0].thumbnail)
+        .setColor('DarkRed');
 
     try {
       await queue.history.back();
-      return await interaction.reply({ embeds: [embed] });
+      return await interaction.reply({embeds: [embed]});
     } catch (e) {
       await interaction.reply({
         content:
-          "There was a problem trying to go to the previous song in the playlist. Try again later.",
+          'There was a problem trying to go to the previous song in the playlist. Try again later.',
         ephemeral: true,
       });
       logger.error(
-        `There was a problem trying to use previous command in guild ${interaction.guildId}: ${e}`
+          `There was a problem trying to use previous command in guild ${interaction.guildId}: ${e}`,
       );
     }
   },

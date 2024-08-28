@@ -1,14 +1,13 @@
-# Critical files containing API tokens
+# Critical files containing environment variables
 
 .env
 
 # Nodes
 node_modules/
 
-# Logs
+# Logs folder
 
-combined.log
-error.log
+logs/
 
 # System-generated files
 
