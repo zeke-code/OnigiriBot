@@ -32,19 +32,19 @@ OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord
 - [ ] **1.1: ...**
   - Further updates and features to be announced.
 
-# Prerequisites
-
-Before you begin, ensure that you meet the following prerequisites:
-
-- **Node.js**: OnigiriBot requires Node.js to run. You can download it from [Node.js Official Website](https://nodejs.org/). It's recommended to use the **LTS** version. Just open the installer you downloaded and follow the installation guide.
-- **FFMPEG**: This is required for handling media streams, it's a **must** if your bot will play music or handle audio. You can download FFMPEG from the [FFMPEG Official Website](https://ffmpeg.org/download.html).
-- **A Discord Account**: To create a bot and get the necessary tokens, you'll need a Discord account. Sign up [here](https://discord.com/register) if you don't have one.
-
 # Installation
 
 There are 2 ways to install and run Onigiribot. You can use Docker or you can run Onigiribot without a container.
 
 Follow the below procedure to install the bot and run it without a container.
+
+## Prerequisites
+
+To install the bot locally, ensure that you meet the following prerequisites:
+
+- **Node.js**: OnigiriBot requires Node.js to run. You can download it from [Node.js Official Website](https://nodejs.org/). It's recommended to use the **LTS** version. Just open the installer you downloaded and follow the installation guide.
+- **FFMPEG**: This is required for handling media streams, it's a **must** if your bot will play music or handle audio. You can download FFMPEG from the [FFMPEG Official Website](https://ffmpeg.org/download.html).
+- **A Discord Account**: To create a bot and get the necessary tokens, you'll need a Discord account. Sign up [here](https://discord.com/register) if you don't have one.
 
 ## Step 1: Registering the bot on Discord and retrieving bot's token
 
