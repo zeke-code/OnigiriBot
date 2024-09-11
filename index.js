@@ -5,6 +5,7 @@ const { YoutubeiExtractor } = require("discord-player-youtubei");
 const loadCommands = require("./loaders/commandLoader");
 const readEvents = require("./loaders/eventLoader");
 const logger = require("./src/utils/logger");
+const connectToDatabase = require("./src/database/database");
 require("dotenv").config();
 
 const discordToken = process.env.DISCORD_TOKEN;
@@ -18,6 +19,8 @@ const client = new Client({
   ],
 });
 client.commands = new Collection();
+
+// connectToDatabase();
 
 client.on("debug", (message) => logger.debug(`Discord.js Debug: ${message}`));
 client.on("warn", (message) => logger.warn(`Discord.js Warning: ${message}`));
