@@ -81,8 +81,13 @@ this will install the dependencies needed for the project.
 Create a `.env` file and place it in the root folder.
 Open the `.env` file with any kind of text editor and add the following lines to the `.env` file, replacing `YOUR_BOT_TOKEN` and `YOUR_APPLICATION_ID` with the token and application ID (to retrieve it go to the application's general informations and copy the application ID) you obtained from the Discord Developer Portal:
 
-`DISCORD_TOKEN=YOUR_BOT_TOKEN
-APPLICATION_ID=YOUR_APPLICATION_ID`
+`
+DISCORD_TOKEN=YOUR_BOT_TOKEN
+`
+<br>
+`
+APPLICATION_ID=YOUR_APPLICATION_ID
+`
 
 Save the file and we're almost good to go!
 
