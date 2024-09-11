@@ -114,3 +114,5 @@ To add OnigiriBot to your server, create an invite link:
 If you encounter any issues, feel free to open an issue on the GitHub repository.
 
 **A small note for developers who'd like to contribute to the project**: feel free to create any pull requests if you'd like to add something to the bot!
+
+**Disclaimer: The developer of this bot assumes no responsibility or liability for any actions taken by users of this bot. This bot is intended solely for instructive and demonstrative purposes. Users are responsible for ensuring that their use complies with all applicable laws and regulations.**
