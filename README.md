@@ -53,11 +53,12 @@ To install the bot locally without Docker, ensure that you meet the following pr
    - Click on “New Application”, give it a name (like OnigiriBot), and create your application. (If you don't have a profile picture to use, feel free to download the one at the top of this document)
 
 2. **Get Your Bot Token and Application ID**:
+
    - Under the "General Information" section, you'll find your application ID. Copy it and save it somewhere.
    - Under the “Bot” section, you’ll find your bot’s token.
    - Copy and save this token somewhere safe, as you'll need it for your bot's configuration.
-  
-4. **Enable Bot's Privileged Gateway Intents**:
+
+3. **Enable Bot's Privileged Gateway Intents**:
    - Under the "Bot" section, enable all privileged gateway intents, as OnigiriBot requires them to run properly.
 
 ## Step 2: Cloning the repository and installing dependencies
@@ -85,13 +86,9 @@ this will install the dependencies needed for the project.
 Create a `.env` file and place it in the root folder.
 Open the `.env` file with any kind of text editor and add the following lines to the `.env` file, replacing `YOUR_BOT_TOKEN` and `YOUR_APPLICATION_ID` with the token and application ID you obtained from the Discord Developer Portal:
 
-`
-DISCORD_TOKEN=YOUR_BOT_TOKEN
-`
+`DISCORD_TOKEN=YOUR_BOT_TOKEN`
 <br>
-`
-APPLICATION_ID=YOUR_APPLICATION_ID
-`
+`APPLICATION_ID=YOUR_APPLICATION_ID`
 
 Save the file and we're almost good to go!
 
@@ -100,13 +97,15 @@ Save the file and we're almost good to go!
 Open a terminal inside the root directory, and use the following command:
 
 ```sh
-node index.js
+npm run start
 ```
 
 If everything is set up correctly, OnigiriBot should now be running. On the console, you should see something like this:
 
 ```console
-$ node index.js
+$ npm run start
+info: Started refreshing 15 application (/) commands. {"service":"OnigiriBot","timestamp":"2024-09-12 00:00:00"}
+info: Successfully reloaded 15 application (/) commands. {"service":"OnigiriBot","timestamp":"2024-09-12 00:00:03"}
 Ready! Logged in as OnigiriBot#3212
 ```
 
