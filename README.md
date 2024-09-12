@@ -52,9 +52,13 @@ To install the bot locally without Docker, ensure that you meet the following pr
    - Go to the [Discord Developer Portal](https://discord.com/developers/applications).
    - Click on “New Application”, give it a name (like OnigiriBot), and create your application. (If you don't have a profile picture to use, feel free to download the one at the top of this document)
 
-2. **Get Your Bot Token**:
-   - Under the “Client Secret” section, you’ll find your bot’s token (press copy). Keep this token confidential.
-   - Save this token somewhere safe (a .txt file is enough), as you'll need it for your bot's configuration.
+2. **Get Your Bot Token and Application ID**:
+   - Under the "General Information" section, you'll find your application ID. Copy it and save it somewhere.
+   - Under the “Bot” section, you’ll find your bot’s token.
+   - Copy and save this token somewhere safe, as you'll need it for your bot's configuration.
+  
+4. **Enable Bot's Privileged Gateway Intents**:
+   - Under the "Bot" section, enable all privileged gateway intents, as OnigiriBot requires them to run properly.
 
 ## Step 2: Cloning the repository and installing dependencies
 
@@ -79,7 +83,7 @@ this will install the dependencies needed for the project.
 ## Step 3: Configuration
 
 Create a `.env` file and place it in the root folder.
-Open the `.env` file with any kind of text editor and add the following lines to the `.env` file, replacing `YOUR_BOT_TOKEN` and `YOUR_APPLICATION_ID` with the token and application ID (to retrieve it go to the application's general informations and copy the application ID) you obtained from the Discord Developer Portal:
+Open the `.env` file with any kind of text editor and add the following lines to the `.env` file, replacing `YOUR_BOT_TOKEN` and `YOUR_APPLICATION_ID` with the token and application ID you obtained from the Discord Developer Portal:
 
 `
 DISCORD_TOKEN=YOUR_BOT_TOKEN
