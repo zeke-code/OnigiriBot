@@ -20,7 +20,7 @@ const client = new Client({
 });
 client.commands = new Collection();
 
-// connectToDatabase();
+connectToDatabase();
 
 client.on("debug", (message) => logger.debug(`Discord.js Debug: ${message}`));
 client.on("warn", (message) => logger.warn(`Discord.js Warning: ${message}`));

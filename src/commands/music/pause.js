@@ -1,11 +1,11 @@
-const {SlashCommandBuilder, EmbedBuilder} = require('discord.js');
-const {useQueue} = require('discord-player');
-const logger = require('../../utils/logger');
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { useQueue } = require("discord-player");
+const logger = require("../../utils/logger");
 
 module.exports = {
   data: new SlashCommandBuilder()
-      .setName('pause')
-      .setDescription('Pauses/unpauses the music player!'),
+    .setName("pause")
+    .setDescription("Pauses/unpauses the music player!"),
   async execute(interaction) {
     if (
       interaction.guild.members.me.voice.channelId &&
@@ -13,14 +13,14 @@ module.exports = {
         interaction.guild.members.me.voice.channelId
     ) {
       return interaction.reply({
-        content: 'You are not in my voice channel!',
+        content: "You are not in my voice channel!",
         ephemeral: true,
       });
     }
     queue = useQueue(interaction.guildId);
     if (!queue) {
       return interaction.reply({
-        content: 'There doesn\'t seem to be any active playlist in this server.',
+        content: "There doesn't seem to be any active playlist in this server.",
         ephemeral: true,
       });
     }
@@ -31,25 +31,25 @@ module.exports = {
     });
 
     const embed = new EmbedBuilder()
-        .setAuthor({
-          name: `${interaction.member.user.displayName}`,
-          iconURL: userAvatar,
-        })
-        .setColor('LightGrey');
+      .setAuthor({
+        name: `${interaction.member.user.displayName}`,
+        iconURL: userAvatar,
+      })
+      .setColor("LightGrey");
 
     try {
-      const action = queue.node.isPaused() ? 'unpaused' : 'paused';
+      const action = queue.node.isPaused() ? "unpaused" : "paused";
       queue.node.isPaused() ? queue.node.resume() : queue.node.pause();
       embed.setDescription(
-          `${interaction.member.user} ${action} the music player.`,
+        `${interaction.member.user} ${action} the music player.`
       );
-      await interaction.followUp({embeds: [embed]});
+      await interaction.followUp({ embeds: [embed] });
     } catch (e) {
       await interaction.followUp(
-          `Something went wrong while trying to pause the player. Try again.`,
+        `Something went wrong while trying to pause the player. Try again.`
       );
       logger.error(
-          `Something went wrong while trying to pause the player in guold ${interaction.guildId}: ${e}`,
+        `Something went wrong while trying to pause the player in guild ${interaction.guildId}: ${e}`
       );
     }
   },
