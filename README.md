@@ -13,7 +13,7 @@
 
 # Overview
 
-OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord bot, ideal for both tech-savvy users and those less familiar with technology. My goal for OnigiriBot is to evolve it into a platform that not only simplifies interactions within Discord but also extends its usability through a web UI. This upcoming feature aims to provide an intuitive and accessible interface, making customization and management of the bot easy for all users. Currently, OnigiriBot is on a developmental journey, with a roadmap that outlines its evolving features and capabilities. Check out the roadmap below.
+OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord bot, ideal for both tech-savvy users and those less familiar with technology. My goal for OnigiriBot is to extend its usability through a web UI. This upcoming feature aims to provide an intuitive and accessible interface, making customization and management of the bot easy for all users. Currently, OnigiriBot is on a developmental journey, with a roadmap that outlines its evolving features and capabilities. Check out the roadmap below.
 
 ## Roadmap
 
@@ -21,8 +21,12 @@ OnigiriBot is designed to be a lightweight, versatile, and user-friendly Discord
   - ✅ The foundation of the bot with essential music playing capabilities.
 - [x] **0.6: Introduction of new fun commands, and a better music player**
   - ✅ Added cat, whisper, nsfw commands, and an improved music player with multiple functionalities.
-- [ ] **0.7: Introduction of moderation commands and database integration**
-  - ❌ Planned moderation tools to manage community interactions and the integration of a database (MongoDB).
+- [x] **0.7-alpha: Starting database integration, migrating codebase to TypeScript**
+  - ✅ Started database integration, migrated codebase to TypeScript.
+- [ ] **0.7-beta: Simpler installation process through bash scripts**
+  - ❌ Release of bash scripts for both Windows and Unix systems to make installation faster.
+- [ ] **0.7: Introduction of moderation commands and complete database integration**
+  - ❌ Planned moderation tools to manage community interactions and full integration of a database (MongoDB).
 - [ ] **0.8: Introduction of customizable messages, shoutouts, and communication features.**
   - ❌ Future update to include personalized messages and community engagement features.
 - [ ] **0.9: Refactoring code, improvements to existing features**
@@ -63,13 +67,13 @@ To install the bot locally without Docker, ensure that you meet the following pr
 
 ## Step 2: Cloning the repository and installing dependencies
 
-Clone the OnigiriBot repository to your local machine using through the cmd:
+Clone the OnigiriBot repository to your local machine using through a terminal (on Windows, search `cmd` or `Powershell` on the search bar):
 
 ```sh
 git clone https://github.com/zeke-code/OnigiriBot.git
 ```
 
-You can also directly download the ZIP file.
+**You can also directly download the ZIP file.**
 
 Navigate into the folder by typing cmd into the path's bar (for MacOS right click the name of the folder at the bottom of the windows and click "Create Terminal at Folder").
 
@@ -121,7 +125,5 @@ To add OnigiriBot to your server, create an invite link:
 ## Conclusion
 
 If you encounter any issues, feel free to open an issue on the GitHub repository.
-
-**A small note for developers who'd like to contribute to the project**: feel free to create any pull requests if you'd like to add something to the bot!
 
 **Disclaimer: The developer of this bot assumes no responsibility or liability for any actions taken by users of this bot. This bot is intended solely for instructive and demonstrative purposes. Users are responsible for ensuring that their use complies with all applicable laws and regulations.**

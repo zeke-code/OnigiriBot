@@ -1,6 +1,9 @@
 # Critical files containing environment variables
 .env
 
+# Build
+build/
+
 # Nodes
 node_modules/
 

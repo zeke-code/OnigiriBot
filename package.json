@@ -4,8 +4,9 @@
   "description": "An open source, lightweight, do-it-all Discord bot with a web UI!",
   "main": "index.js",
   "scripts": {
-    "dev": "node src/utils/deploy-commands.js & nodemon index.js",
-    "start": "node src/utils/deploy-commands.js & node index.js"
+    "build": "tsc",
+    "start": "npm run build && node build/utils/deploy-commands.js && node build/main.js",
+    "dev": "npm run build && node build/utils/deploy-commands.js && nodemon build/main.js"
   },
   "repository": {
     "type": "git",
