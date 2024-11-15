@@ -1,38 +1,34 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { useQueue } from "discord-player";
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
+import { GuildQueue, useQueue } from "discord-player";
 import logger from "../../utils/logger";
+import { validateMusicInteraction } from "../../utils/music/validateMusicInteraction";
+import { QueueMetadata } from "../../types/QueueMetadata";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("back")
+    .setContexts([InteractionContextType.Guild])
     .setDescription("Plays the previous song in the playlist!"),
 
   async execute(interaction: any) {
-    if (!interaction.member.voice.channelId) {
-      return await interaction.reply({
-        content: "You are not in a voice channel!",
-        ephemeral: true,
-      });
-    }
-
-    if (
-      interaction.guild.members.me?.voice?.channelId &&
-      interaction.member.voice.channelId !==
-        interaction.guild.members.me.voice.channelId
-    ) {
-      return interaction.reply({
-        content: "You are not in my voice channel!",
-        ephemeral: true,
-      });
-    }
-
-    const queue = useQueue(interaction.guildId);
+    const queue: GuildQueue<QueueMetadata> | null = useQueue(
+      interaction.guildId
+    );
     if (!queue) {
-      return interaction.reply({
+      await interaction.reply({
         content: "There doesn't seem to be any active playlist in this server.",
         ephemeral: true,
       });
+      return;
     }
+    const validation = await validateMusicInteraction(interaction, queue, {
+      requireQueue: true,
+    });
+    if (!validation) return;
 
     const previousTracks = queue.history.tracks.toArray();
     if (!previousTracks[0]) {

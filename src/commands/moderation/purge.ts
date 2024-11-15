@@ -3,6 +3,7 @@ import {
   CommandInteraction,
   PermissionFlagsBits,
   TextChannel,
+  InteractionContextType,
 } from "discord.js";
 import logger from "../../utils/logger";
 
@@ -12,6 +13,7 @@ const command = {
     .setDescription(
       "Deletes a specified amount of recent messages from a channel!"
     )
+    .setContexts([InteractionContextType.Guild])
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
     .addIntegerOption((option) =>
       option

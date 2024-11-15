@@ -1,52 +1,58 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { useQueue } from "discord-player";
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ChatInputCommandInteraction,
+  ButtonInteraction,
+  InteractionContextType,
+} from "discord.js";
+import { GuildQueue, useQueue } from "discord-player";
 import logger from "../../utils/logger";
+import { validateMusicInteraction } from "../../utils/music/validateMusicInteraction";
+import { QueueMetadata } from "../../types/QueueMetadata";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("pause")
+    .setContexts([InteractionContextType.Guild])
     .setDescription("Pauses/unpauses the music player!"),
 
-  async execute(interaction: any) {
-    if (
-      interaction.guild.members.me?.voice?.channelId &&
-      interaction.member.voice.channelId !==
-        interaction.guild.members.me.voice.channelId
-    ) {
-      return interaction.reply({
-        content: "You are not in my voice channel!",
-        ephemeral: true,
-      });
-    }
+  async execute(
+    interaction: ChatInputCommandInteraction | ButtonInteraction
+  ): Promise<void> {
+    const guildId = interaction.guildId!;
+    const queue: GuildQueue<QueueMetadata> | null = useQueue(guildId);
 
-    const queue = useQueue(interaction.guildId);
     if (!queue) {
-      return interaction.reply({
+      await interaction.reply({
         content: "There doesn't seem to be any active playlist in this server.",
         ephemeral: true,
       });
+      return;
     }
 
-    await interaction.deferReply();
-
-    const userAvatar = interaction.member.displayAvatarURL({
-      dynamic: true,
-      size: 1024,
+    const validation = await validateMusicInteraction(interaction, queue, {
+      requireQueue: true,
+      requirePlaying: true,
+      requireBotInChannel: true,
     });
+    if (!validation) return;
 
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: interaction.member.user.displayName,
-        iconURL: userAvatar,
-      })
-      .setColor("LightGrey");
+    const { member } = validation;
+
+    await interaction.deferReply();
 
     try {
       const action = queue.node.isPaused() ? "unpaused" : "paused";
       queue.node.isPaused() ? queue.node.resume() : queue.node.pause();
-      embed.setDescription(
-        `${interaction.member.user} ${action} the music player.`
-      );
+
+      const embed = new EmbedBuilder()
+        .setAuthor({
+          name: member.displayName,
+          iconURL: member.displayAvatarURL({ size: 1024 }),
+        })
+        .setColor("LightGrey")
+        .setDescription(`${member.displayName} ${action} the music player.`);
+
       await interaction.followUp({ embeds: [embed] });
     } catch (e) {
       await interaction.followUp({
@@ -55,8 +61,10 @@ export default {
         ephemeral: true,
       });
       logger.error(
-        `Something went wrong while trying to pause the player in guild ${interaction.guildId}: ${e}`
+        `Error in 'pause' command in guild ${interaction.guildId}: ${e}`
       );
     }
+
+    return;
   },
 };

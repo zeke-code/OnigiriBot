@@ -1,0 +1,6 @@
+{
+  "watch": ["src"],
+  "ext": "ts",
+  "ignore": ["build"],
+  "exec": "npm run build && node build/utils/deploy-commands.js && node build/main.js"
+}

@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   CommandInteraction,
+  InteractionContextType,
 } from "discord.js";
 import axios from "axios";
 import logger from "../../utils/logger";
@@ -24,6 +25,7 @@ const nsfwGifsPaths: string[] = [
 const nsfwCommand = {
   data: new SlashCommandBuilder()
     .setName("nsfw")
+    .setContexts([InteractionContextType.Guild])
     .setDescription("Sends a random hentai NSFW GIF in your channel... 😳")
     .setNSFW(true),
 

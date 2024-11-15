@@ -1,10 +1,15 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 import { useQueue } from "discord-player";
 import logger from "../../utils/logger";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("stop")
+    .setContexts([InteractionContextType.Guild])
     .setDescription(
       "Makes me stop playing music and deletes current playlist!"
     ),

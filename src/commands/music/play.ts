@@ -1,13 +1,22 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { useMainPlayer, QueryType, useQueue } from "discord-player";
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ChatInputCommandInteraction,
+  GuildMember,
+  TextChannel,
+  VoiceChannel,
+  InteractionContextType,
+} from "discord.js";
+import { useMainPlayer, QueryType, useQueue, GuildQueue } from "discord-player";
+import { QueueMetadata } from "../../types/QueueMetadata";
+import { validateMusicInteraction } from "../../utils/music/validateMusicInteraction";
 import logger from "../../utils/logger";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("play")
-    .setDescription(
-      "Play music by writing the link/name/lyrics of a song/playlist!"
-    )
+    .setDescription("Play music by writing the link/name of a song/playlist!")
+    .setContexts([InteractionContextType.Guild])
     .addStringOption((option) =>
       option
         .setName("query")
@@ -17,67 +26,53 @@ export default {
         .setRequired(true)
     ),
 
-  async execute(interaction: any) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const player = useMainPlayer();
+    let queue: GuildQueue<QueueMetadata> | null = useQueue(
+      interaction.guildId!
+    );
 
-    if (!interaction.member.voice.channel) {
-      return interaction.reply({
-        content:
-          "You need to be connected to a voice channel to use this command.",
-        ephemeral: true,
-      });
-    }
+    const validation = await validateMusicInteraction(interaction, queue, {
+      requireQueue: false,
+      requireBotInChannel: false,
+      requirePlaying: false,
+    });
+    if (!validation) return;
 
-    if (
-      interaction.guild.members.me?.voice?.channelId &&
-      interaction.member.voice.channelId !==
-        interaction.guild.members.me.voice.channelId
-    ) {
-      return interaction.reply({
-        content: "You are not in my voice channel!",
-        ephemeral: true,
+    const { member, voiceChannel } = validation;
+
+    if (!queue) {
+      queue = player.nodes.create<QueueMetadata>(interaction.guild!, {
+        metadata: {
+          voiceChannel: voiceChannel as VoiceChannel,
+          textChannel: interaction.channel as TextChannel,
+          requestedBy: member as GuildMember,
+        },
       });
     }
 
     await interaction.deferReply();
     const query = interaction.options.getString("query", true);
-    let queue = useQueue(interaction.guildId);
-
-    if (!queue) {
-      queue = player.nodes.create(interaction.guild, {
-        metadata: {
-          voiceChannel: interaction.member.voice.channel,
-          channel: interaction.channel,
-          requestedBy: interaction.user,
-        },
-      });
-    }
 
     const result = await player
       .search(query, {
         searchEngine: QueryType.AUTO,
       })
       .catch((e) => {
-        logger.error(`Error while trying to search ${query}`);
+        logger.error(`Error while trying to search ${query}: ${e}`);
         return null;
       });
 
-    if (!result) {
+    if (!result || !result.tracks.length) {
       return interaction.followUp({
         content: "Results not found for your request. Try again!",
         ephemeral: true,
       });
     }
 
-    if (!result.tracks[0]) {
-      return interaction.followUp(
-        "There was an error trying to accomplish your request. Try with a different playlist or song."
-      );
-    }
-
     try {
       if (!queue.connection) {
-        await queue.connect(interaction.member.voice.channel);
+        await queue.connect(voiceChannel);
       }
     } catch (e) {
       queue.delete();
@@ -98,21 +93,20 @@ export default {
       if (!queue.isPlaying()) await queue.node.play();
     } catch (e) {
       logger.error(
-        `Something went wrong while trying to use play command. \n${e}`
+        `Something went wrong while trying to use play command: ${e}`
       );
-      return interaction.followUp(
-        "Something went wrong while trying to queue your song. Try again in a bit."
-      );
+      return interaction.followUp({
+        content:
+          "Something went wrong while trying to queue your song. Try again in a bit.",
+        ephemeral: true,
+      });
     }
 
-    const userAvatar = interaction.member.displayAvatarURL({
-      dynamic: true,
-      size: 1024,
-    });
+    const userAvatar = member.displayAvatarURL({ size: 1024 });
 
     const embed = new EmbedBuilder()
       .setAuthor({
-        name: `${interaction.member.user.displayName}`,
+        name: member.displayName,
         iconURL: userAvatar,
       })
       .setDescription(

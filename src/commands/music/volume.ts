@@ -5,45 +5,36 @@ import {
   ActionRowBuilder,
   TextInputBuilder,
   ModalSubmitInteraction,
+  InteractionContextType,
+  ChatInputCommandInteraction,
+  ButtonInteraction,
 } from "discord.js";
-import { useQueue } from "discord-player";
+import { GuildQueue, useQueue } from "discord-player";
 import logger from "../../utils/logger";
+import { validateMusicInteraction } from "../../utils/music/validateMusicInteraction";
+import { QueueMetadata } from "../../types/QueueMetadata";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("volume")
-    .setDescription("Change the global volume of the bot."),
+    .setContexts([InteractionContextType.Guild])
+    .setDescription("Change the global volume of the bot in the server."),
 
-  async execute(interaction: any) {
-    if (!interaction.member.voice.channelId) {
-      return interaction.reply({
-        content: "You are not in a voice channel!",
-        ephemeral: true,
-      });
-    }
+  async execute(interaction: ButtonInteraction) {
+    let queue: GuildQueue<QueueMetadata> | null = useQueue(
+      interaction.guildId!
+    );
 
-    if (
-      interaction.guild.members.me?.voice?.channelId &&
-      interaction.member.voice.channelId !==
-        interaction.guild.members.me.voice.channelId
-    ) {
-      return interaction.reply({
-        content: "You are not in my voice channel!",
-        ephemeral: true,
-      });
-    }
-
-    const queue = useQueue(interaction.guildId);
-    if (!queue) {
-      return interaction.reply({
-        content: "There doesn't seem to be any active playlist in this server.",
-        ephemeral: true,
-      });
-    }
+    const validation = await validateMusicInteraction(interaction, queue, {
+      requireQueue: false,
+      requireBotInChannel: true,
+      requirePlaying: true,
+    });
+    if (!validation) return;
 
     const modal = new ModalBuilder()
-      .setCustomId(`adjust_volume_${interaction.guild.id}`)
-      .setTitle(`Adjust Volume - Currently at ${queue.node.volume}%`)
+      .setCustomId(`adjust_volume_${interaction.guild?.id}`)
+      .setTitle(`Adjust Volume - Currently at ${queue?.node.volume}%`)
       .addComponents([
         new ActionRowBuilder<TextInputBuilder>().addComponents(
           new TextInputBuilder()
@@ -60,7 +51,7 @@ export default {
     await interaction.showModal(modal);
 
     const filter = (i: ModalSubmitInteraction) =>
-      i.customId.includes(`adjust_volume_${interaction.guild.id}`);
+      i.customId.includes(`adjust_volume_${interaction.guild?.id}`);
 
     interaction
       .awaitModalSubmit({ filter, time: 240000 })
@@ -78,14 +69,13 @@ export default {
           });
         }
 
-        const volumeembed = new EmbedBuilder()
+        const volumeEmbed = new EmbedBuilder()
           .setAuthor({
             name: "OnigiriBot",
             iconURL: interaction.client.user.displayAvatarURL(),
           })
-          .setThumbnail(interaction.guild.iconURL({ dynamic: true }))
           .setColor("#FFFFFF")
-          .setTitle("Volume adjusted 🎧")
+          .setTitle("Volume adjusted 🔊")
           .setDescription(`The volume has been set to **${userResponse}%**!`)
           .setTimestamp()
           .setFooter({
@@ -93,8 +83,8 @@ export default {
           });
 
         try {
-          queue.node.setVolume(Number(userResponse));
-          submit.reply({ embeds: [volumeembed] });
+          queue?.node.setVolume(Number(userResponse));
+          submit.reply({ embeds: [volumeEmbed] });
         } catch (err) {
           logger.error(
             `Error adjusting volume in guild ${interaction.guildId}: ${err}`

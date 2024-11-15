@@ -1,10 +1,15 @@
-import { SlashCommandBuilder, EmbedBuilder } from "discord.js";
+import {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  InteractionContextType,
+} from "discord.js";
 import { useQueue } from "discord-player";
 import logger from "../../utils/logger";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("skip")
+    .setContexts([InteractionContextType.Guild])
     .setDescription("Skip the current track playing in the playlist!"),
 
   async execute(interaction: any) {
