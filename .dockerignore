@@ -1,14 +1,16 @@
 # Dependencies and build
-node_modules
-build
+node_modules/
+build/
 
 # Git files
 .git
 .gitignore
 .gitattributes
+.github
 
 # Environment variables
-.env
+*.env
 
 # Logs
 *.log
+logs/
