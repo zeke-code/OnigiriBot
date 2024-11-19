@@ -1,8 +1,9 @@
-FROM node:22
+# Base image is node 23 alpine to keep the container as light as possible
+FROM node:23-alpine
 
-RUN apt-get update && apt-get install -y git ffmpeg
+RUN apk update && apk add git ffmpeg
 
-WORKDIR /app/
+WORKDIR /onigiribot/
 
 COPY . .
 
