@@ -11,7 +11,7 @@ WORKDIR /onigiribot/
 COPY . .
 
 # Install dependencies
-RUN npm install
+RUN npm ci
 
-# Start the bot
+# Set container entrypoint to run the server on spin up
 CMD ["npm", "run", "start"]
