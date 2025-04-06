@@ -3,8 +3,7 @@
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true,
-      "requireStatusChecks": null
+      "automerge": true
     },
     {
       "matchUpdateTypes": ["major"],
