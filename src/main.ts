@@ -3,6 +3,7 @@ import { ExtendedClient } from "./types/ExtendedClient";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { Player, PlayerInitOptions } from "discord-player";
 import { YoutubeiExtractor } from "discord-player-youtubei";
+import { DefaultExtractors } from "@discord-player/extractor";
 import loadCommands from "./loaders/commandLoader";
 import readEvents from "./loaders/eventLoader";
 import connectToDatabase from "./database/database";
@@ -36,7 +37,7 @@ const player = new Player(client, {
     filter: "audioonly",
   },
 } as PlayerInitOptions);
-player.extractors.loadDefault();
+player.extractors.loadMulti(DefaultExtractors);
 player.extractors.register(YoutubeiExtractor, undefined);
 
 const commandsPath: string = path.join(__dirname, "commands");
