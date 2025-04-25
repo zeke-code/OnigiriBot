@@ -51,7 +51,7 @@ export default {
           iconURL: member.displayAvatarURL({ size: 1024 }),
         })
         .setColor("LightGrey")
-        .setDescription(`${member.displayName} ${action} the music player.`);
+        .setDescription(`${interaction.member} ${action} the music player.`);
 
       await interaction.followUp({ embeds: [embed] });
     } catch (e) {
