@@ -1,18 +1,19 @@
 services:
-  bot:
+  onigiribot:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: onigiribot
+    env_file: .env
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
       - APPLICATION_ID=${APPLICATION_ID}
       - MONGO_URI=mongodb://mongo:27017/onigiribot
     depends_on:
-      - mongo
+      - mongodb
     restart: unless-stopped
 
-  mongo:
+  mongodb:
     image: mongo:latest
     container_name: mongodb
     environment:

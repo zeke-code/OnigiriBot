@@ -69,17 +69,17 @@ if (player) {
           .addFields(
             {
               name: `Artist`,
-              value: `${track.author}`,
+              value: `\`${track.author}\``,
               inline: true,
             },
             {
-              name: `Playing in ${
+              name: `Playing in \`${
                 (queue.metadata.voiceChannel as VoiceChannel).name
-              }`,
+              }\``,
               value: `Requested by ${queue.metadata.requestedBy}`,
               inline: true,
             },
-            { name: "Duration", value: track.duration, inline: true }
+            { name: "Duration", value: `\`${track.duration}\``, inline: true }
           )
           .setColor("#ffffff");
 
