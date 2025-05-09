@@ -103,23 +103,46 @@ export default {
     }
 
     const userAvatar = member.displayAvatarURL({ size: 1024 });
+    const track = result.playlist ? result.playlist : result.tracks[0];
+    const isPlaylist = !!result.playlist;
+    const duration = result.tracks[0].duration;
+    const formattedDuration = duration
+      ? `\`${duration}\``
+      : "`Unknown duration`";
+    const url = track.url || "";
 
     const embed = new EmbedBuilder()
-      .setAuthor({
-        name: member.displayName,
-        iconURL: userAvatar,
-      })
-      .setDescription(
-        `**${interaction.user}** added **${
-          result.playlist ? result.playlist.title : result.tracks[0].title
-        }**`
+      .setTitle(
+        isPlaylist ? "🎵 Playlist Added to Queue" : "🎵 Track Added to Queue"
       )
-      .setColor("Blue");
+      .setDescription(
+        `**${interaction.user}** added **[${track.title}](${url})**`
+      )
+      .addFields(
+        {
+          name: isPlaylist ? "Tracks" : "Duration",
+          value: isPlaylist
+            ? `\`${result.tracks.length} songs\``
+            : formattedDuration,
+          inline: true,
+        },
+        {
+          name: "Position",
+          value:
+            queue.tracks.size > 0
+              ? `\`#${queue.tracks.size}\``
+              : "`Now Playing`",
+          inline: true,
+        }
+      )
+      .setColor("#FF5555")
+      .setTimestamp()
+      .setFooter({
+        text: "Onigiri Music Player",
+        iconURL: interaction.client.user.displayAvatarURL(),
+      });
 
-    const thumbnailUrl = result.playlist
-      ? result.playlist.thumbnail
-      : result.tracks[0].thumbnail;
-
+    const thumbnailUrl = track.thumbnail;
     if (thumbnailUrl && thumbnailUrl.trim() !== "") {
       embed.setThumbnail(thumbnailUrl);
     }

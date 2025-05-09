@@ -79,7 +79,7 @@ export default {
           .setDescription(`The volume has been set to **${userResponse}%**!`)
           .setTimestamp()
           .setFooter({
-            text: `Requested by: ${interaction.user.displayName}`,
+            text: `Requested by: \`${interaction.user.displayName}\``,
           });
 
         try {
