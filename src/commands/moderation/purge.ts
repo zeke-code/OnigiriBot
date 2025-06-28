@@ -4,6 +4,7 @@ import {
   PermissionFlagsBits,
   TextChannel,
   InteractionContextType,
+  ChatInputCommandInteraction,
 } from "discord.js";
 import logger from "../../utils/logger";
 
@@ -22,7 +23,7 @@ const command = {
         .setRequired(true)
     ),
 
-  async execute(interaction: CommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const amountOption = interaction.options.get("amount", true);
     const amount = amountOption.value as number;
 
