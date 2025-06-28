@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   CommandInteraction,
+  ChatInputCommandInteraction,
 } from "discord.js";
 
 const responses: string[] = [
@@ -39,7 +40,7 @@ const eightBallCommand = {
         .setMaxLength(100)
     ),
 
-  async execute(interaction: CommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const question = interaction.options.get("question", true);
     const response = responses[Math.floor(Math.random() * responses.length)];
 

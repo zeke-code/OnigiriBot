@@ -4,6 +4,7 @@ import {
   EmbedBuilder,
   TextChannel,
   InteractionContextType,
+  ChatInputCommandInteraction,
 } from "discord.js";
 import logger from "../../utils/logger";
 
@@ -20,7 +21,7 @@ const whisperCommand = {
         .setRequired(true)
     ),
 
-  async execute(interaction: CommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction) {
     const messageOption = interaction.options.get("message", true);
     const message = messageOption.value as string;
 
