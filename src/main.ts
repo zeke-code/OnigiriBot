@@ -6,8 +6,8 @@ import { YoutubeiExtractor } from "discord-player-youtubei";
 import { DefaultExtractors } from "@discord-player/extractor";
 import loadCommands from "./loaders/commandLoader";
 import readEvents from "./loaders/eventLoader";
-import connectToDatabase from "./database/database";
 import { config } from "dotenv";
+import connectToDatabase from "./services/database";
 
 config({ path: path.resolve(__dirname, "../.env") });
 const discordToken: string | undefined = process.env.DISCORD_TOKEN;

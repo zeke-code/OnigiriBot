@@ -5,24 +5,32 @@ services:
       dockerfile: Dockerfile
     container_name: onigiribot
     env_file: .env
-    environment:
-      - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - APPLICATION_ID=${APPLICATION_ID}
-      - MONGO_URI=mongodb://mongo:27017/onigiribot
     depends_on:
-      - mongodb
+      - postgres
+      - redis
     restart: unless-stopped
 
-  mongodb:
-    image: mongo:latest
-    container_name: mongodb
-    environment:
-      - MONGO_INITDB_DATABASE=onigiribot
-    volumes:
-      - mongo-data:/data/db
-    ports:
-      - "27017:27017"
+
+  postgres:
+    image: postgres:17.5-alpine
+    container_name: postgres-db
     restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:8-alpine
+    container_name: redis-cache
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
 
 volumes:
-  mongo-data:
+  postgres-data:
+  redis-data:

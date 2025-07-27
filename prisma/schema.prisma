@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// Model for storing server-specific configurations
+model Guild {
+  id               String  @id @default(cuid()) // Unique ID for the record
+  guildId          String  @unique // The Discord Guild ID
+  prefix           String? @default("!") // Optional custom prefix
+  logChannelId     String? // Channel ID for moderation logs
+  welcomeChannelId String? // Channel ID for welcome messages
+  welcomeMessage   String? @default("Welcome to the server, {{user}}!") // Customizable welcome message
+
+  // Relation to moderation logs
+  moderationLogs ModerationLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Model for storing data about users
+// Could be used for economy, XP/levels, etc.
+model User {
+  id      String @id @default(cuid())
+  userId  String @unique // The Discord User ID
+  xp      Int    @default(0)
+  level   Int    @default(1)
+  balance BigInt @default(0) // Use BigInt for currency to avoid float precision issues
+
+  // Relations to moderation logs
+  actionsTaken     ModerationLog[] @relation("ModeratorActions")
+  actionsAgainst   ModerationLog[] @relation("UserActions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Model for logging moderation actions (cases)
+model ModerationLog {
+  id          Int      @id @default(autoincrement()) // A unique, incrementing case number
+  guild       Guild    @relation(fields: [guildId], references: [guildId])
+  guildId     String
+  user        User     @relation("UserActions", fields: [userId], references: [userId])
+  userId      String
+  moderator   User     @relation("ModeratorActions", fields: [moderatorId], references: [userId])
+  moderatorId String
+  action      ModAction // The type of action taken (e.g., BAN, KICK)
+  reason      String?  @default("No reason provided.")
+  duration    DateTime? // Optional duration for temporary actions like mutes/bans
+  
+  createdAt DateTime @default(now())
+
+  // Add an index for faster lookups on guildId
+  @@index([guildId])
+}
+
+// Enum for the different types of moderation actions
+enum ModAction {
+  WARN
+  MUTE
+  KICK
+  BAN
+  UNMUTE
+  UNBAN
+}

@@ -12,3 +12,6 @@ logs/
 
 # System-generated files
 .DS_Store
+
+# Prisma generated files
+/src/generated/prisma
