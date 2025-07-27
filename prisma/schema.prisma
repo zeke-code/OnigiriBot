@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Guild {
+  id               String   @id
+  prefix           String   @default("/")
+  disabledCommands String[] @default([])
+  welcomeChannelId String?
+  logsChannelId    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  users     GuildUser[]
+  settings  GuildSettings?
+  warnings  Warning[]
+  
+  @@map("guilds")
+}
+
+model User {
+  id          String    @id
+  globalBan   Boolean   @default(false)
+  premiumTier Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  guilds      GuildUser[]
+  warnings    Warning[]
+  
+  @@map("users")
+}
+
+model GuildUser {
+  guildId     String
+  userId      String
+  level       Int      @default(0)
+  experience  Int      @default(0)
+  joinedAt    DateTime @default(now())
+
+  // Relations
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([guildId, userId])
+  @@map("guild_users")
+}
+
+model GuildSettings {
+  guildId           String  @id
+  autoModEnabled    Boolean @default(false)
+  welcomeEnabled    Boolean @default(false)
+  welcomeMessage    String?
+  goodbyeEnabled    Boolean @default(false)
+  goodbyeMessage    String?
+  levelUpMessage    String  @default("Congratulations {user}, you've reached level {level}!")
+  
+  // Relations
+  guild             Guild   @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  
+  @@map("guild_settings")
+}
+
+model Warning {
+  id          String   @id @default(cuid())
+  guildId     String
+  userId      String
+  moderatorId String
+  reason      String
+  createdAt   DateTime @default(now())
+
+  // Relations
+  guild       Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("warnings")
+}

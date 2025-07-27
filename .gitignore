@@ -1,5 +1,5 @@
 # Critical files containing environment variables
-.env
+.env*
 
 # Build
 build/
@@ -12,3 +12,7 @@ logs/
 
 # System-generated files
 .DS_Store
+
+/src/generated/prisma
+
+/generated/prisma
