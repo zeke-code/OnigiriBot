@@ -4,9 +4,9 @@
   "description": "An open source, lightweight, do-it-all Discord bot with a web UI!",
   "main": "index.js",
   "scripts": {
-    "start": "node build/main.js",
+    "start": "node build/index.js",
     "build": "tsc",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/main.ts",
+    "dev": "nodemon --watch 'src/**/*.ts' --exec ts-node src/index.ts",
     "deploy-commands": "ts-node src/utils/deploy-commands.ts",
     "prisma:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate"
