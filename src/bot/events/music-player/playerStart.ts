@@ -69,7 +69,10 @@ if (player) {
               value: `${queue.metadata.requestedBy}`,
               inline: true,
             },
-            { name: "Duration", value: `\`${track.duration}\``, inline: true }
+            { name: "Duration", value: `\`${track.duration}\``, inline: true },
+            {
+              name: "Position in Queue", value: `\`#${queue.tracks.size}\``, inline: true,
+            }
           )
           .setColor("#ffffff");
 
