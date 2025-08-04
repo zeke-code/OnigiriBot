@@ -58,7 +58,6 @@ function createEndGameEmbed(
         inline: true,
       }
     )
-    .setTimestamp();
 }
 
 const rockPaperScissorsCommand = {
@@ -173,8 +172,7 @@ const rockPaperScissorsCommand = {
             { name: "Round Result", value: result.message, inline: false },
             { name: `${userName} Score`, value: `${userScore}`, inline: true },
             { name: "Bot Score", value: `${botScore}`, inline: true }
-          )
-          .setTimestamp();
+          );
 
         if (botScore === 3 || userScore === 3) {
           break;

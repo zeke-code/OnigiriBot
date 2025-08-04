@@ -10,10 +10,9 @@ import {
 } from "discord.js";
 import logger from "../../../utils/logger";
 import { QueueMetadata } from "../../../types/QueueMetadata";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 const player: Player | undefined = useMainPlayer();
-
-let embedMessageId: string | null = null;
 
 const createButton = (
   customId: string,
@@ -42,30 +41,18 @@ if (player) {
           { customId: "volume", label: "Volume", emoji: "🔊" },
         ];
 
-        // Create action rows for buttons
         const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          buttons
-            .slice(0, 5)
-            .map(({ customId, label, emoji }) =>
-              createButton(customId, label, emoji)
-            )
+          buttons.slice(0, 5).map(btn => createButton(btn.customId, btn.label, btn.emoji))
         );
 
         const secondRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          buttons
-            .slice(5)
-            .map(({ customId, label, emoji }) =>
-              createButton(customId, label, emoji)
-            )
+          buttons.slice(5).map(btn => createButton(btn.customId, btn.label, btn.emoji))
         );
 
-        const embed = new EmbedBuilder()
+        const embed = createMusicEmbed()
           .setURL(track.url)
           .setTitle(`${track.title}`)
-          .setAuthor({
-            name: "♪ OnigiriBot - Music Player ♪",
-            iconURL: "https://i.ibb.co/bFJ5GC1/Oni-Avatar.png",
-          })
+          .setThumbnail(track.thumbnail || null)
           .addFields(
             {
               name: `Artist`,
@@ -73,45 +60,33 @@ if (player) {
               inline: true,
             },
             {
-              name: `Playing in \`${
-                (queue.metadata.voiceChannel as VoiceChannel).name
-              }\``,
-              value: `Requested by ${queue.metadata.requestedBy}`,
+              name: `Playing in`,
+              value: `\`${(queue.metadata.voiceChannel as VoiceChannel).name}\``,
+              inline: true,
+            },
+            {
+              name: `Requested by`,
+              value: `${queue.metadata.requestedBy}`,
               inline: true,
             },
             { name: "Duration", value: `\`${track.duration}\``, inline: true }
           )
           .setColor("#ffffff");
 
-        if (track.thumbnail?.trim()) {
-          embed.setThumbnail(track.thumbnail);
+        if (queue.metadata.nowPlayingMessage) {
+          await queue.metadata.nowPlayingMessage.edit({
+            embeds: [embed],
+            components: [row, secondRow],
+          });
+        } else {
+          const sentMessage: Message = await (
+            queue.metadata.textChannel as TextChannel
+          ).send({
+            embeds: [embed],
+            components: [row, secondRow],
+          });
+          queue.metadata.nowPlayingMessage = sentMessage;
         }
-
-        // Delete previous embed message if exists
-        if (embedMessageId) {
-          try {
-            const message = await (
-              queue.metadata.textChannel as TextChannel
-            ).messages.fetch(embedMessageId);
-
-            if (message) {
-              await message.delete();
-              embedMessageId = null;
-            }
-          } catch (error) {
-            logger.error("Error deleting the previous embed:", error);
-          } finally {
-            embedMessageId = null;
-          }
-        }
-
-        const sentMessage: Message = await (
-          queue.metadata.textChannel as TextChannel
-        ).send({
-          embeds: [embed],
-          components: [row, secondRow],
-        });
-        embedMessageId = sentMessage.id;
       } catch (error) {
         logger.error("Error in playerStart event:", error);
       }

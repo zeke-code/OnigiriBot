@@ -1,6 +1,5 @@
 import {
   SlashCommandBuilder,
-  EmbedBuilder,
   ChatInputCommandInteraction,
   ButtonInteraction,
   InteractionContextType,
@@ -9,6 +8,7 @@ import { GuildQueue, useQueue } from "discord-player";
 import logger from "../../../utils/logger";
 import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
 import { QueueMetadata } from "../../../types/QueueMetadata";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -43,15 +43,17 @@ export default {
 
     try {
       const action = queue.node.isPaused() ? "unpaused" : "paused";
+      const statusEmoji = queue.node.isPaused() ? "▶️" : "⏸️";
       queue.node.isPaused() ? queue.node.resume() : queue.node.pause();
 
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: member.displayName,
-          iconURL: member.displayAvatarURL({ size: 1024 }),
+      const embed = createMusicEmbed()
+        .setTitle(`${statusEmoji} Music Player ${action}`)
+        .addFields({  
+          name: "Requested by",
+          value: `${member}`,
+          inline: true,
         })
-        .setColor("LightGrey")
-        .setDescription(`${interaction.member} ${action} the music player.`);
+        .setColor("LightGrey");
 
       await interaction.followUp({ embeds: [embed] });
     } catch (e) {

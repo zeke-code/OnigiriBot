@@ -1,6 +1,5 @@
 import {
   SlashCommandBuilder,
-  CommandInteraction,
   PermissionFlagsBits,
   TextChannel,
   InteractionContextType,

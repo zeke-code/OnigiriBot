@@ -7,6 +7,7 @@ import { GuildQueue, useQueue } from "discord-player";
 import logger from "../../../utils/logger";
 import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
 import { QueueMetadata } from "../../../types/QueueMetadata";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -38,20 +39,17 @@ export default {
       });
     }
 
-    const userAvatar = interaction.member.displayAvatarURL({
-      dynamic: true,
-      size: 1024,
-    });
-
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: `${interaction.member.user.displayName}`,
-        iconURL: userAvatar,
-      })
+    const embed = createMusicEmbed()
+      .setTitle("⏮️ Playing Previous Track")
       .setDescription(
-        `**${interaction.member}** pressed the previous button. Now playing **${previousTracks[0].title}** by **${previousTracks[0].author}**`
+        `Now playing **${previousTracks[0].title}** by **${previousTracks[0].author}**`
       )
       .setThumbnail(previousTracks[0].thumbnail)
+      .setFields({
+        name: "Requested By",
+        value: `${interaction.member}`,
+        inline: true,
+      })
       .setColor("DarkRed");
 
     try {

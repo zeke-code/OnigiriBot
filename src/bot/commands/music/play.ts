@@ -1,6 +1,5 @@
 import {
   SlashCommandBuilder,
-  EmbedBuilder,
   ChatInputCommandInteraction,
   GuildMember,
   TextChannel,
@@ -11,6 +10,7 @@ import { useMainPlayer, QueryType, useQueue, GuildQueue } from "discord-player";
 import { QueueMetadata } from "../../../types/QueueMetadata";
 import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
 import logger from "../../../utils/logger";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -102,7 +102,6 @@ export default {
       });
     }
 
-    const userAvatar = member.displayAvatarURL({ size: 1024 });
     const track = result.playlist ? result.playlist : result.tracks[0];
     const isPlaylist = !!result.playlist;
     const duration = result.tracks[0].duration;
@@ -111,12 +110,13 @@ export default {
       : "`Unknown duration`";
     const url = track.url || "";
 
-    const embed = new EmbedBuilder()
+    const embed = createMusicEmbed()
       .setTitle(
-        isPlaylist ? "🎵 Playlist Added to Queue" : "🎵 Track Added to Queue"
+        `${track.title}`
       )
+      .setURL(track.url)
       .setDescription(
-        `**${interaction.user}** added **[${track.title}](${url})**`
+        isPlaylist ? `Adding **${result.tracks.length} songs from playlist** to the queue!` : `Adding song to the queue!`
       )
       .addFields(
         {
@@ -133,14 +133,14 @@ export default {
               ? `\`#${queue.tracks.size}\``
               : "`Now Playing`",
           inline: true,
+        },
+        {
+          name: "Requested By",
+          value: `${queue.metadata.requestedBy}`,
+          inline: true,
         }
       )
-      .setColor("#FF5555")
-      .setTimestamp()
-      .setFooter({
-        text: "Onigiri Music Player",
-        iconURL: interaction.client.user.displayAvatarURL(),
-      });
+      .setColor("#FF5555");
 
     const thumbnailUrl = track.thumbnail;
     if (thumbnailUrl && thumbnailUrl.trim() !== "") {

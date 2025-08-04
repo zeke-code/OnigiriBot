@@ -7,6 +7,7 @@ import { GuildQueue, useQueue } from "discord-player";
 import logger from "../../../utils/logger";
 import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
 import { QueueMetadata } from "../../../types/QueueMetadata";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -32,25 +33,21 @@ export default {
     });
     if (!validation) return;
 
-    const userAvatar = interaction.member.displayAvatarURL({
-      dynamic: true,
-      size: 1024,
-    });
-
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: `${interaction.member.user.displayName}`,
-        iconURL: userAvatar,
+    const embed = createMusicEmbed()
+      .setFields({
+        name: "Requested By",
+        value: `${interaction.member}`,
+        inline: true,
       })
       .setColor("Purple");
 
     try {
       if (queue.isShuffling) {
         queue.toggleShuffle();
-        embed.setDescription(`${interaction.member} disabled shuffle mode!`);
+        embed.setTitle(`🔀 Shuffle Mode Disabled`);
       } else {
         queue.toggleShuffle();
-        embed.setDescription(`${interaction.member} enabled shuffle mode!`);
+        embed.setTitle(`🔀 Shuffle Mode Enabled`);
       }
 
       return await interaction.reply({ embeds: [embed] });

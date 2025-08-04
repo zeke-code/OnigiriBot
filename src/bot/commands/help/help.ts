@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   CommandInteraction,
+  MessageFlags,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
 import { Command } from "../../../types/Command";
@@ -31,7 +32,7 @@ const helpCommand: Command = {
     });
 
     // Send the embed as a reply to the user
-    await interaction.reply({ embeds: [helpEmbed], ephemeral: true });
+    await interaction.reply({ embeds: [helpEmbed], flags: MessageFlags.Ephemeral });
   },
 };
 

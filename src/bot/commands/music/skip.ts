@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { useQueue } from "discord-player";
 import logger from "../../../utils/logger";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -33,29 +34,42 @@ export default {
     }
 
     const currentTrack = queue.currentTrack;
+    const nextTrack = queue.tracks.at(0);
 
     try {
       queue.node.skip();
       if (queue.isEmpty()) queue.delete();
 
-      const userAvatar = interaction.member.displayAvatarURL({
-        dynamic: true,
-        size: 1024,
-      });
-
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: `${interaction.member.user.displayName}`,
-          iconURL: userAvatar,
-        })
+       const embed = createMusicEmbed()
+        .setColor("DarkRed")
+        .setTitle("⏭️ Track Skipped")
         .setDescription(
-          `**${interaction.member}** skipped **${
-            currentTrack?.title || "a song"
-          }**`
-        )
-        .setColor("DarkRed");
+          `Successfully skipped **[${currentTrack?.title}](${currentTrack?.url})**.`
+        );
 
-      if (currentTrack?.thumbnail && currentTrack.thumbnail.trim() !== "") {
+      if (nextTrack) {
+        embed.addFields({
+          name: "Now Playing",
+          value: `**[${nextTrack.title}](${nextTrack.url})**`,
+          inline: true,
+        });
+      } else {
+        embed.addFields({
+          name: "Now Playing",
+          value: "Nothing!",
+          inline: true,
+        });
+        // If the queue is empty after skipping, it will be deleted by the disconnect event.
+      }
+
+      // We add the requested field after the others for style purposes.
+      embed.addFields({
+          name: "Requested by",
+          value: `${interaction.member}`,
+          inline: true,
+        })
+
+      if (currentTrack?.thumbnail) {
         embed.setThumbnail(currentTrack.thumbnail);
       }
 

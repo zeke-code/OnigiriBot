@@ -18,8 +18,7 @@ export default {
         { name: "Username", value: member.user.tag, inline: true },
         { name: "Member Count", value: `${guild.memberCount}`, inline: true }
       )
-      .setFooter({ text: `Welcome to ${guild.name}` })
-      .setTimestamp();
+      .setFooter({ text: `Welcome to ${guild.name}` });
 
     if (channel) {
       await channel.send({ embeds: [welcomeEmbed] });

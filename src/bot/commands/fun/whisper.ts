@@ -42,8 +42,7 @@ const whisperCommand = {
         const embed = new EmbedBuilder()
           .setColor("#ffffff")
           .setTitle("Someone whispered...")
-          .setDescription(message)
-          .setTimestamp();
+          .setDescription(message);
 
         await (interaction.channel as TextChannel).send({
           embeds: [embed],

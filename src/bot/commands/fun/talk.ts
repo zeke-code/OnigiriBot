@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, CommandInteraction } from "discord.js";
+import { SlashCommandBuilder, CommandInteraction, MessageFlags } from "discord.js";
 
 const quotes: string[] = [
   "Every day may not be good, but there's something good in every day.",
@@ -20,7 +20,7 @@ const talkCommand = {
 
   async execute(interaction: CommandInteraction) {
     const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-    await interaction.reply({ content: randomQuote, ephemeral: true });
+    await interaction.reply({ content: randomQuote, flags: MessageFlags.Ephemeral });
   },
 };
 

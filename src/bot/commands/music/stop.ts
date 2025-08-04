@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { useQueue } from "discord-player";
 import logger from "../../../utils/logger";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -45,19 +46,13 @@ export default {
       queue.node.stop();
       queue.delete();
 
-      const userAvatar = interaction.member.displayAvatarURL({
-        dynamic: true,
-        size: 1024,
-      });
-
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: `${interaction.member.user.displayName}`,
-          iconURL: userAvatar,
+      const embed = createMusicEmbed()
+        .setTitle("⏹️ Music Player Stopped")
+        .addFields({
+          name: "Requested by",
+          value: `${interaction.member}`,
+          inline: true,
         })
-        .setDescription(
-          `**${interaction.member}** stopped the music player. Deleting playlist as well.`
-        )
         .setColor("#000000");
 
       await interaction.reply({ embeds: [embed] });

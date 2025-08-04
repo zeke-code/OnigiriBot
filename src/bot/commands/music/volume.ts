@@ -13,6 +13,7 @@ import { GuildQueue, useQueue } from "discord-player";
 import logger from "../../../utils/logger";
 import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
 import { QueueMetadata } from "../../../types/QueueMetadata";
+import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -69,15 +70,10 @@ export default {
           });
         }
 
-        const volumeEmbed = new EmbedBuilder()
-          .setAuthor({
-            name: "OnigiriBot",
-            iconURL: interaction.client.user.displayAvatarURL(),
-          })
+        const volumeEmbed =  createMusicEmbed()
           .setColor("#FFFFFF")
           .setTitle("Volume adjusted 🔊")
           .setDescription(`The volume has been set to **${userResponse}%**!`)
-          .setTimestamp()
           .setFooter({
             text: `Requested by: \`${interaction.user.displayName}\``,
           });
