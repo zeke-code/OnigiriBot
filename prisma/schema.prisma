@@ -8,60 +8,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 // Model for storing server-specific configurations
 model Guild {
-  id               String  @id @default(cuid()) // Unique ID for the record
-  guildId          String  @unique // The Discord Guild ID
-  prefix           String? @default("!") // Optional custom prefix
-  logChannelId     String? // Channel ID for moderation logs
-  welcomeChannelId String? // Channel ID for welcome messages
-  welcomeMessage   String? @default("Welcome to the server, {{user}}!") // Customizable welcome message
+  guildId          String  @id // The Discord Guild ID is the primary key
+  prefix           String? @default("!")
+  logChannelId     String?
+  welcomeChannelId String?
+  welcomeMessage   String? @default("Welcome to the server, {{user}}!")
 
-  // Relation to moderation logs
+  // A Guild has many Members and many ModerationLogs
+  members        Member[]
   moderationLogs ModerationLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-// Model for storing data about users
-// Could be used for economy, XP/levels, etc.
 model User {
-  id      String @id @default(cuid())
-  userId  String @unique // The Discord User ID
-  xp      Int    @default(0)
-  level   Int    @default(1)
-  balance BigInt @default(0) // Use BigInt for currency to avoid float precision issues
+  userId  String @id // The Discord User ID is the primary key
+  balance BigInt @default(0)
 
-  // Relations to moderation logs
-  actionsTaken     ModerationLog[] @relation("ModeratorActions")
-  actionsAgainst   ModerationLog[] @relation("UserActions")
+  // A User can have many Memberships (one for each server they are in)
+  memberships    Member[]
+
+  actionsTaken   ModerationLog[] @relation("ModeratorActions")
+  actionsAgainst ModerationLog[] @relation("UserActions")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
+// It connects a User to a Guild and stores the data for that specific relationship.
+model Member {
+  id      Int @id @default(autoincrement()) // A unique ID for the membership record
+  xp      Int @default(0)  // XP in the server
+  level   Int @default(1)  // Level is also per-server
+
+  // The relation to the User model
+  user    User   @relation(fields: [userId], references: [userId])
+  userId  String
+
+  // The relation to the Guild model
+  guild   Guild  @relation(fields: [guildId], references: [guildId])
+  guildId String
+
+  // This ensures a user can only be a member of a guild ONCE.
+  // It's also critical for making queries efficient.
+  @@unique([userId, guildId])
+}
+
 // Model for logging moderation actions (cases)
 model ModerationLog {
-  id          Int      @id @default(autoincrement()) // A unique, incrementing case number
+  id          Int      @id @default(autoincrement())
   guild       Guild    @relation(fields: [guildId], references: [guildId])
   guildId     String
   user        User     @relation("UserActions", fields: [userId], references: [userId])
   userId      String
   moderator   User     @relation("ModeratorActions", fields: [moderatorId], references: [userId])
   moderatorId String
-  action      ModAction // The type of action taken (e.g., BAN, KICK)
+  action      ModAction
   reason      String?  @default("No reason provided.")
-  duration    DateTime? // Optional duration for temporary actions like mutes/bans
-  
-  createdAt DateTime @default(now())
+  duration    DateTime?
+  createdAt   DateTime @default(now())
 
-  // Add an index for faster lookups on guildId
   @@index([guildId])
 }
 
-// Enum for the different types of moderation actions
 enum ModAction {
   WARN
   MUTE

@@ -1,10 +1,12 @@
 import { Events, GuildMember, TextChannel, EmbedBuilder } from "discord.js";
 import logger from "../../utils/logger";
+import { prisma } from "../../services/database";
 
 export default {
   name: Events.GuildMemberAdd,
   async execute(member: GuildMember): Promise<void> {
     const guild = member.guild;
+    const guildId = member.guild.id;
     const channel = guild.systemChannel as TextChannel | null;
     const userId = member.id;
     const mention = `<@${userId}>`;
@@ -12,13 +14,12 @@ export default {
     const welcomeEmbed = new EmbedBuilder()
       .setColor("#ffffff")
       .setTitle("Welcome to the Server!")
-      .setDescription(`Hey, ${mention}, we're excited to have you here!`)
+      .setDescription(`${(await prisma.guild.findFirst({ where: { guildId: guildId } }))?.welcomeMessage || "We're glad to have you here!"}`)
       .setThumbnail(member.user.displayAvatarURL())
       .addFields(
-        { name: "Username", value: member.user.tag, inline: true },
+        { name: "Username", value: mention, inline: true },
         { name: "Member Count", value: `${guild.memberCount}`, inline: true }
-      )
-      .setFooter({ text: `Welcome to ${guild.name}` });
+      );
 
     if (channel) {
       await channel.send({ embeds: [welcomeEmbed] });

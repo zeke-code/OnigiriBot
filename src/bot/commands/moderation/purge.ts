@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import logger from "../../../utils/logger";
 
-const command = {
+const purgeCommand = {
   data: new SlashCommandBuilder()
     .setName("purge")
     .setDescription(
@@ -52,4 +52,4 @@ const command = {
   },
 };
 
-export default command;
+export default purgeCommand;
