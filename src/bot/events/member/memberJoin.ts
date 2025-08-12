@@ -1,6 +1,6 @@
 import { Events, GuildMember, TextChannel, EmbedBuilder } from "discord.js";
-import logger from "../../utils/logger";
-import { prisma } from "../../services/database";
+import logger from "../../../utils/logger";
+import { prisma } from "../../../services/database";
 
 export default {
   name: Events.GuildMemberAdd,

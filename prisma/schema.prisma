@@ -14,7 +14,9 @@ model Guild {
   prefix           String? @default("!")
   logChannelId     String?
   welcomeChannelId String?
-  welcomeMessage   String? @default("Welcome to the server, {{user}}!")
+  welcomeMessage   String?
+  goodbyeMessage   String?
+  goodbyeMessageId String?
 
   // A Guild has many Members and many ModerationLogs
   members        Member[]
