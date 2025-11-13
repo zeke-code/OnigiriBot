@@ -65,6 +65,7 @@ export class GuildQueue {
       await this.play();
     } else {
       logger.info(`Queue for guild ${this.guildId} is empty.`);
+      await this.destroy();
     }
   }
 

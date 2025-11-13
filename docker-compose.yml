@@ -11,7 +11,7 @@ services:
       redis:
         condition: service_started
       lavalink:
-        condition: service_healthy
+        condition: service_started
 
     restart: unless-stopped
 
@@ -44,19 +44,6 @@ services:
       - "2333:2333"
     volumes:
       - ./application.yml:/opt/Lavalink/application.yml
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "-H",
-          "Authorization: ${LAVALINK_PASSWORD}",
-          "http://localhost:2333/v4/info",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 volumes:
   postgres-data:
