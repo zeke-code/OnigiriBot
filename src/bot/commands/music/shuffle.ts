@@ -1,63 +1,53 @@
 import {
   SlashCommandBuilder,
-  EmbedBuilder,
+  ChatInputCommandInteraction,
   InteractionContextType,
+  GuildMember,
 } from "discord.js";
-import { GuildQueue, useQueue } from "discord-player";
-import logger from "../../../utils/logger";
-import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
-import { QueueMetadata } from "../../../types/QueueMetadata";
-import { createMusicEmbed } from "../../../utils/music/musicEmbed";
+import { ExtendedClient } from "../../../types/ExtendedClient";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("shuffle")
     .setContexts([InteractionContextType.Guild])
-    .setDescription("Shuffles the current playlist!"),
+    .setDescription("Randomly shuffles the tracks in the queue."),
 
-  async execute(interaction: any) {
-    const queue: GuildQueue<QueueMetadata> | null = useQueue(
-      interaction.guildId
-    );
-    if (!queue) {
-      return await interaction.reply({
-        content: "There is no active playlist in this server.",
-        ephemeral: true,
-      });
+  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+    if (!interaction.guildId || !(interaction.member instanceof GuildMember)) {
+      return;
     }
 
-    const validation = await validateMusicInteraction(interaction, queue, {
-      requireQueue: true,
-      requirePlaying: true,
-      requireBotInChannel: true,
-    });
-    if (!validation) return;
+    const client = interaction.client as ExtendedClient;
+    const queue = client.musicManager.queues.get(interaction.guildId);
 
-    const embed = createMusicEmbed()
-      .setFields({
-        name: "Requested By",
-        value: `${interaction.member}`,
-        inline: true,
-      })
-      .setColor("Purple");
+    if (!queue || queue.tracks.length < 2) {
+      await interaction.reply({
+        content: "There are not enough songs in the queue to shuffle.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    if (interaction.member.voice.channel?.id !== queue.voiceChannel?.id) {
+      await interaction.reply({
+        content:
+          "You must be in the same voice channel as me to use this command.",
+        ephemeral: true,
+      });
+      return;
+    }
 
     try {
-      if (queue.isShuffling) {
-        queue.toggleShuffle();
-        embed.setTitle(`🔀 Shuffle Mode Disabled`);
-      } else {
-        queue.toggleShuffle();
-        embed.setTitle(`🔀 Shuffle Mode Enabled`);
-      }
+      queue.shuffle();
 
-      return await interaction.reply({ embeds: [embed] });
-    } catch (e) {
-      logger.error(
-        `Something went wrong while trying to toggle shuffle in guild ${interaction.guildId}: ${e}`
-      );
-      return await interaction.reply({
-        content:
-          "Something went wrong while trying to toggle shuffle. Try again!",
+      await interaction.reply({
+        content: "🔀 The queue has been successfully shuffled!",
+      });
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({
+        content: "An error occurred while trying to shuffle the queue.",
+        ephemeral: true,
       });
     }
   },

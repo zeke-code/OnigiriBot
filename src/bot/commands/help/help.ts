@@ -32,7 +32,10 @@ const helpCommand: Command = {
     });
 
     // Send the embed as a reply to the user
-    await interaction.reply({ embeds: [helpEmbed], flags: MessageFlags.Ephemeral });
+    await interaction.reply({
+      embeds: [helpEmbed],
+      flags: MessageFlags.Ephemeral,
+    });
   },
 };
 

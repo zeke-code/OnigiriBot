@@ -11,7 +11,7 @@ const applicationId: string | undefined = process.env.APPLICATION_ID;
 
 if (!token || !applicationId) {
   throw new Error(
-    "Missing DISCORD_TOKEN or APPLICATION_ID in the environment variables."
+    "Missing DISCORD_TOKEN or APPLICATION_ID in the environment variables.",
   );
 }
 
@@ -34,7 +34,7 @@ for (const folder of commandFolders) {
       commands.push(command.data.toJSON());
     } else {
       logger.warn(
-        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+        `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
       );
     }
   }
@@ -45,18 +45,18 @@ const rest = new REST({ version: "10" }).setToken(token);
 (async () => {
   try {
     logger.info(
-      `Started refreshing ${commands.length} application (/) commands.`
+      `Started refreshing ${commands.length} application (/) commands.`,
     );
 
     const data: any = await rest.put(
       Routes.applicationCommands(applicationId),
       {
         body: commands,
-      }
+      },
     );
 
     logger.info(
-      `Successfully reloaded ${data.length} application (/) commands.`
+      `Successfully reloaded ${data.length} application (/) commands.`,
     );
   } catch (error) {
     logger.error(error);

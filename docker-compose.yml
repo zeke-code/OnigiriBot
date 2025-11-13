@@ -6,13 +6,17 @@ services:
     container_name: onigiribot
     env_file: .env
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+      lavalink:
+        condition: service_healthy
+
     restart: unless-stopped
 
-
   postgres:
-    image: postgres:17.5-alpine
+    image: postgres:18-alpine
     container_name: postgres-db
     restart: unless-stopped
     env_file:
@@ -30,6 +34,29 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4.1.1
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "2333:2333"
+    volumes:
+      - ./application.yml:/opt/Lavalink/application.yml
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "-H",
+          "Authorization: ${LAVALINK_PASSWORD}",
+          "http://localhost:2333/v4/info",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres-data:

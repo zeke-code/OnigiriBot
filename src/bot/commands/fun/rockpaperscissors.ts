@@ -44,7 +44,7 @@ function createEndGameEmbed(
   winnerName: string,
   loserName: string,
   winnerScore: number,
-  loserScore: number
+  loserScore: number,
 ): EmbedBuilder {
   return new EmbedBuilder()
     .setColor("#0099ff")
@@ -56,8 +56,8 @@ function createEndGameEmbed(
         name: "Final Score",
         value: `${winnerScore} - ${loserScore}`,
         inline: true,
-      }
-    )
+      },
+    );
 }
 
 const rockPaperScissorsCommand = {
@@ -84,7 +84,7 @@ const rockPaperScissorsCommand = {
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       rock,
       paper,
-      scissors
+      scissors,
     );
 
     const response = await interaction.reply({
@@ -160,7 +160,7 @@ const rockPaperScissorsCommand = {
             {
               name: `${userName} Choice`,
               value: `${confirmation.customId}${getEmoji(
-                confirmation.customId
+                confirmation.customId,
               )}`,
               inline: true,
             },
@@ -171,7 +171,7 @@ const rockPaperScissorsCommand = {
             },
             { name: "Round Result", value: result.message, inline: false },
             { name: `${userName} Score`, value: `${userScore}`, inline: true },
-            { name: "Bot Score", value: `${botScore}`, inline: true }
+            { name: "Bot Score", value: `${botScore}`, inline: true },
           );
 
         if (botScore === 3 || userScore === 3) {
@@ -192,14 +192,14 @@ const rockPaperScissorsCommand = {
           "Bot",
           `${userName}`,
           botScore,
-          userScore
+          userScore,
         );
       } else if (userScore === 3) {
         endEmbed = createEndGameEmbed(
           `${userName}`,
           "Bot",
           userScore,
-          botScore
+          botScore,
         );
       }
 

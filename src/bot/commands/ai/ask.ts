@@ -15,7 +15,7 @@ const askCommand = {
         .setName("prompt")
         .setDescription("The question you want to ask the AI.")
         .setRequired(true)
-        .setMaxLength(500)
+        .setMaxLength(500),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -35,7 +35,7 @@ const askCommand = {
         })
         .addFields(
           { name: "Your Question", value: prompt },
-          { name: "My Answer", value: response }
+          { name: "My Answer", value: response },
         );
       await interaction.followUp({ embeds: [embed] });
     } catch (error) {

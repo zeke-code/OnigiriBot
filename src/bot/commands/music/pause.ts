@@ -1,72 +1,58 @@
 import {
   SlashCommandBuilder,
   ChatInputCommandInteraction,
-  ButtonInteraction,
   InteractionContextType,
+  GuildMember,
 } from "discord.js";
-import { GuildQueue, useQueue } from "discord-player";
-import logger from "../../../utils/logger";
-import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
-import { QueueMetadata } from "../../../types/QueueMetadata";
-import { createMusicEmbed } from "../../../utils/music/musicEmbed";
+import { ExtendedClient } from "../../../types/ExtendedClient";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("pause")
     .setContexts([InteractionContextType.Guild])
-    .setDescription("Pauses/unpauses the music player!"),
+    .setDescription("Pauses or resumes the current track."),
 
-  async execute(
-    interaction: ChatInputCommandInteraction | ButtonInteraction
-  ): Promise<void> {
-    const guildId = interaction.guildId!;
-    const queue: GuildQueue<QueueMetadata> | null = useQueue(guildId);
+  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+    if (!interaction.guildId || !(interaction.member instanceof GuildMember)) {
+      return;
+    }
 
-    if (!queue) {
+    const client = interaction.client as ExtendedClient;
+    const queue = client.musicManager.queues.get(interaction.guildId);
+
+    if (!queue || !queue.isPlaying) {
       await interaction.reply({
-        content: "There doesn't seem to be any active playlist in this server.",
+        content: "There is nothing playing right now.",
         ephemeral: true,
       });
       return;
     }
 
-    const validation = await validateMusicInteraction(interaction, queue, {
-      requireQueue: true,
-      requirePlaying: true,
-      requireBotInChannel: true,
-    });
-    if (!validation) return;
-
-    const { member } = validation;
-
-    await interaction.deferReply();
-
-    try {
-      const action = queue.node.isPaused() ? "unpaused" : "paused";
-      const statusEmoji = queue.node.isPaused() ? "▶️" : "⏸️";
-      queue.node.isPaused() ? queue.node.resume() : queue.node.pause();
-
-      const embed = createMusicEmbed()
-        .setTitle(`${statusEmoji} Music Player ${action}`)
-        .addFields({  
-          name: "Requested by",
-          value: `${member}`,
-          inline: true,
-        })
-        .setColor("LightGrey");
-
-      await interaction.followUp({ embeds: [embed] });
-    } catch (e) {
-      await interaction.followUp({
+    if (interaction.member.voice.channel?.id !== queue.voiceChannel?.id) {
+      await interaction.reply({
         content:
-          "Something went wrong while trying to pause the player. Try again.",
+          "You must be in the same voice channel as me to use this command.",
         ephemeral: true,
       });
-      logger.error(
-        `Error in 'pause' command in guild ${interaction.guildId}: ${e}`
-      );
+      return;
     }
 
-    return;
+    try {
+      const shouldPause = !queue.isPaused;
+      await queue.pause(shouldPause);
+
+      const replyMessage = shouldPause
+        ? "⏸️ The player has been paused."
+        : "▶️ The player has been resumed.";
+
+      await interaction.reply(replyMessage);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({
+        content:
+          "An error occurred while trying to toggle the player state. Please try again.",
+        ephemeral: true,
+      });
+    }
   },
 };

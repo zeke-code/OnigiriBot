@@ -3,14 +3,13 @@ import {
   ChatInputCommandInteraction,
   GuildMember,
   TextChannel,
-  VoiceChannel,
   InteractionContextType,
 } from "discord.js";
-import { useMainPlayer, QueryType, useQueue, GuildQueue } from "discord-player";
-import { QueueMetadata } from "../../../types/QueueMetadata";
-import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
+import { ExtendedClient } from "../../../types/ExtendedClient";
 import logger from "../../../utils/logger";
 import { createMusicEmbed } from "../../../utils/music/musicEmbed";
+import { Track, LoadType } from "shoukaku";
+import { GuildQueue } from "../../music/GuildQueue";
 
 export default {
   data: new SlashCommandBuilder()
@@ -20,133 +19,100 @@ export default {
     .addStringOption((option) =>
       option
         .setName("query")
-        .setDescription(
-          "I'll search for a song/playlist based on your query (links, song title, lyrics...)!"
-        )
-        .setRequired(true)
+        .setDescription("A song title or a URL (YouTube, Spotify, SoundCloud).")
+        .setRequired(true),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
-    const player = useMainPlayer();
-    let queue: GuildQueue<QueueMetadata> | null = useQueue(
-      interaction.guildId!
-    );
-
-    const validation = await validateMusicInteraction(interaction, queue, {
-      requireQueue: false,
-      requireBotInChannel: false,
-      requirePlaying: false,
-    });
-    if (!validation) return;
-
-    const { member, voiceChannel } = validation;
-
-    if (!queue) {
-      queue = player.nodes.create<QueueMetadata>(interaction.guild!, {
-        metadata: {
-          voiceChannel: voiceChannel as VoiceChannel,
-          textChannel: interaction.channel as TextChannel,
-          requestedBy: member as GuildMember,
-        },
+    if (
+      !interaction.guildId ||
+      !interaction.member ||
+      !(interaction.member instanceof GuildMember)
+    ) {
+      return interaction.reply({
+        content: "This command can only be used in a server.",
+        ephemeral: true,
       });
     }
 
-    await interaction.deferReply();
+    const client = interaction.client as ExtendedClient;
+    const musicManager = client.musicManager;
+
+    const voiceChannel = interaction.member.voice.channel;
+    if (!voiceChannel) {
+      return interaction.reply({
+        content: "You need to be in a voice channel to play music!",
+        ephemeral: true,
+      });
+    }
+
     const query = interaction.options.getString("query", true);
+    await interaction.deferReply();
 
-    const result = await player
-      .search(query, {
-        searchEngine: QueryType.AUTO,
-      })
-      .catch((e) => {
-        logger.error(`Error while trying to search ${query}: ${e}`);
-        return null;
-      });
-
-    if (!result || !result.tracks.length) {
+    const node = musicManager.shoukaku.getIdealNode();
+    if (!node) {
       return interaction.followUp({
-        content: "Results not found for your request. Try again!",
-        ephemeral: true,
+        content: "No available music node to process your request.",
       });
     }
 
-    try {
-      if (!queue.connection) {
-        await queue.connect(voiceChannel);
-      }
-    } catch (e) {
-      queue.delete();
-      await interaction.followUp({
-        content:
-          "Something went wrong while trying to connect to your voice channel. Try again!",
-        ephemeral: true,
-      });
-      logger.error(
-        `Error while trying to connect to voice channel of guild ${interaction.guildId}: ${e}`
-      );
-      return;
-    }
-
-    try {
-      queue.addTrack(result.playlist ? result.tracks : result.tracks[0]);
-      logger.info(`Song enqueuing successful for ${query}`);
-      if (!queue.isPlaying()) await queue.node.play();
-    } catch (e) {
-      logger.error(
-        `Something went wrong while trying to use play command: ${e}`
-      );
+    const result = await node.rest.resolve(query);
+    if (
+      !result ||
+      result.loadType === LoadType.EMPTY ||
+      result.loadType === LoadType.ERROR
+    ) {
       return interaction.followUp({
-        content:
-          "Something went wrong while trying to queue your song. Try again in a bit.",
-        ephemeral: true,
+        content: "I couldn't find any results for your query.",
       });
     }
 
-    const track = result.playlist ? result.playlist : result.tracks[0];
-    const isPlaylist = !!result.playlist;
-    const duration = result.tracks[0].duration;
-    const formattedDuration = duration
-      ? `\`${duration}\``
-      : "`Unknown duration`";
-    const url = track.url || "";
+    const queue: GuildQueue = musicManager.getQueue(interaction.guildId);
+    queue.textChannel = interaction.channel as TextChannel;
+
+    if (!queue.player) {
+      await queue.connect(voiceChannel);
+    }
+
+    if (voiceChannel.id !== queue.voiceChannel?.id) {
+      return interaction.followUp({
+        content: "You must be in the same voice channel as me to add songs.",
+      });
+    }
+
+    let tracks: Track[];
+    let responseMessage: string;
+
+    switch (result.loadType) {
+      case LoadType.TRACK:
+        tracks = [result.data];
+        responseMessage = `Added **${tracks[0].info.title}** to the queue.`;
+        break;
+      case LoadType.SEARCH:
+        tracks = [result.data[0]];
+        responseMessage = `Added **${tracks[0].info.title}** to the queue.`;
+        break;
+      case LoadType.PLAYLIST:
+        tracks = result.data.tracks;
+        responseMessage = `Added **${tracks.length}** songs from playlist **${result.data.info.name}** to the queue.`;
+        break;
+      default:
+        const exhaustiveCheck: never = result;
+        return interaction.followUp({
+          content: "I couldn't load this track or playlist.",
+        });
+    }
+
+    queue.addTracks(tracks);
 
     const embed = createMusicEmbed()
-      .setTitle(
-        `${track.title}`
-      )
-      .setURL(track.url)
-      .setDescription(
-        isPlaylist ? `Adding **${result.tracks.length} songs from playlist** to the queue!` : `Adding song to the queue!`
-      )
-      .addFields(
-        {
-          name: isPlaylist ? "Tracks" : "Duration",
-          value: isPlaylist
-            ? `\`${result.tracks.length} songs\``
-            : formattedDuration,
-          inline: true,
-        },
-        {
-          name: "Position",
-          value:
-            queue.tracks.size > 0
-              ? `\`#${queue.tracks.size}\``
-              : "`Now Playing`",
-          inline: true,
-        },
-        {
-          name: "Requested By",
-          value: `${queue.metadata.requestedBy}`,
-          inline: true,
-        }
-      )
-      .setColor("#FF5555");
-
-    const thumbnailUrl = track.thumbnail;
-    if (thumbnailUrl && thumbnailUrl.trim() !== "") {
-      embed.setThumbnail(thumbnailUrl);
-    }
+      .setTitle("✅ Music Queued")
+      .setDescription(responseMessage);
 
     await interaction.followUp({ embeds: [embed] });
+
+    if (!queue.isPlaying) {
+      await queue.play();
+    }
   },
 };

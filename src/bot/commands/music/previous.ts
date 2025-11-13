@@ -1,69 +1,62 @@
 import {
   SlashCommandBuilder,
-  EmbedBuilder,
+  ChatInputCommandInteraction,
   InteractionContextType,
+  GuildMember,
+  EmbedBuilder,
 } from "discord.js";
-import { GuildQueue, useQueue } from "discord-player";
-import logger from "../../../utils/logger";
-import { validateMusicInteraction } from "../../../utils/music/validateMusicInteraction";
-import { QueueMetadata } from "../../../types/QueueMetadata";
+import { ExtendedClient } from "../../../types/ExtendedClient";
 import { createMusicEmbed } from "../../../utils/music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
-    .setName("back")
+    .setName("previous")
     .setContexts([InteractionContextType.Guild])
-    .setDescription("Plays the previous song in the playlist!"),
+    .setDescription("Plays the previous song in the history."),
 
-  async execute(interaction: any) {
-    const queue: GuildQueue<QueueMetadata> | null = useQueue(
-      interaction.guildId
-    );
+  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+    if (!interaction.guildId || !(interaction.member instanceof GuildMember)) {
+      return;
+    }
+
+    const client = interaction.client as ExtendedClient;
+    const queue = client.musicManager.queues.get(interaction.guildId);
+
+    // Controlla se esiste una coda
     if (!queue) {
       await interaction.reply({
-        content: "There doesn't seem to be any active playlist in this server.",
+        content: "I'm not playing anything right now.",
         ephemeral: true,
       });
       return;
     }
-    const validation = await validateMusicInteraction(interaction, queue, {
-      requireQueue: true,
-    });
-    if (!validation) return;
 
-    const previousTracks = queue.history.tracks.toArray();
-    if (!previousTracks[0]) {
-      return interaction.reply({
-        content: "There isn't any track history for this playlist.",
+    // Controlla se l'utente è nel canale giusto
+    if (interaction.member.voice.channel?.id !== queue.voiceChannel?.id) {
+      await interaction.reply({
+        content: "You must be in the same voice channel as me.",
         ephemeral: true,
       });
+      return;
+    }
+
+    // Chiama il nostro nuovo metodo `previous`
+    const previousTrack = await queue.previous();
+
+    if (!previousTrack) {
+      await interaction.reply({
+        content: "There is no track history to go back to.",
+        ephemeral: true,
+      });
+      return;
     }
 
     const embed = createMusicEmbed()
       .setTitle("⏮️ Playing Previous Track")
       .setDescription(
-        `Now playing **${previousTracks[0].title}** by **${previousTracks[0].author}**`
-      )
-      .setThumbnail(previousTracks[0].thumbnail)
-      .setFields({
-        name: "Requested By",
-        value: `${interaction.member}`,
-        inline: true,
-      })
-      .setColor("DarkRed");
-
-    try {
-      await queue.history.back();
-      return await interaction.reply({ embeds: [embed] });
-    } catch (e) {
-      await interaction.reply({
-        content:
-          "There was a problem trying to go to the previous song in the playlist. Try again later.",
-        ephemeral: true,
-      });
-      logger.error(
-        `There was a problem trying to use previous command in guild ${interaction.guildId}: ${e}`
+        `Now playing **[${previousTrack.info.title}](${previousTrack.info.uri})**.`,
       );
-    }
+
+    await interaction.reply({ embeds: [embed] });
   },
 };

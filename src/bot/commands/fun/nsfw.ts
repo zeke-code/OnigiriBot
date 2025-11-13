@@ -34,7 +34,7 @@ const nsfwCommand = {
       const randomWord =
         nsfwGifsPaths[Math.floor(Math.random() * nsfwGifsPaths.length)];
       const response = await axios.get(
-        `https://purrbot.site/api/img/nsfw/${randomWord}/gif`
+        `https://purrbot.site/api/img/nsfw/${randomWord}/gif`,
       );
       const url = response.data?.link;
 
@@ -46,7 +46,7 @@ const nsfwCommand = {
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       logger.error(
-        `Error while trying to retrieve NSFW image from API: ${error}`
+        `Error while trying to retrieve NSFW image from API: ${error}`,
       );
       await interaction.reply({
         content: "Something went wrong with the request. Try again",

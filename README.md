@@ -29,12 +29,10 @@ To follow this installation method, you must have [**Docker**](https://www.docke
 ### Step 1: Registering the bot on Discord and retrieving bot's token
 
 1. **Create Your Bot**:
-
    - Go to the [Discord Developer Portal](https://discord.com/developers/applications) and login with your Discord account.
    - Click on “New Application”, give it a name (like OnigiriBot), and create your application. (If you don't have a profile picture to use, feel free to download the one at the top of this document)
 
 2. **Get Your Bot Token and Application ID**:
-
    - Under the "General Information" section, you'll find your application ID. Copy and save it somewhere.
    - Under the “Bot” section, you’ll find your bot’s token. Copy and save this token somewhere safe, as you'll need it for your bot's configuration.
      Note that anyone in possess of this token can run whatever code they want using your bot tied to your Discord account.
@@ -88,12 +86,10 @@ To install the bot locally without Docker, ensure that you meet the following pr
 ### Step 1: Registering the bot on Discord and retrieving bot's token
 
 1. **Create Your Bot**:
-
    - Go to the [Discord Developer Portal](https://discord.com/developers/applications) and login with your Discord account.
    - Click on “New Application”, give it a name (like OnigiriBot), and create your application. (If you don't have a profile picture to use, feel free to download the one at the top of this document)
 
 2. **Get Your Bot Token and Application ID**:
-
    - Under the "General Information" section, you'll find your application ID. Copy and save it somewhere.
    - Under the “Bot” section, you’ll find your bot’s token. Copy and save this token somewhere safe, as you'll need it for your bot's configuration and login.
      Note that anyone in possess of this token can run whatever code they want using your bot tied to your Discord account.

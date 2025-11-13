@@ -19,7 +19,7 @@ interface OllamaResponse {
  */
 export async function askOllama(
   prompt: string,
-  model: string = "dolphin-mixtral:8x7b"
+  model: string = "dolphin-mixtral:8x7b",
 ): Promise<string> {
   if (!OLLAMA_URL) {
     logger.error("OLLAMA_URL is not defined in the environment variables.");
@@ -46,7 +46,7 @@ export async function askOllama(
 
     const response = await axios.post<OllamaResponse>(
       `${OLLAMA_URL}/api/generate`,
-      payload
+      payload,
     );
 
     return response.data.response;
@@ -54,11 +54,11 @@ export async function askOllama(
     const axiosError = error as AxiosError;
     if (axiosError.response) {
       logger.error(
-        `Ollama API responded with status ${axiosError.response.status}: ${axiosError.response.data}`
+        `Ollama API responded with status ${axiosError.response.status}: ${axiosError.response.data}`,
       );
     } else if (axiosError.request) {
       logger.error(
-        `Could not connect to Ollama service at ${OLLAMA_URL}. Is it running?`
+        `Could not connect to Ollama service at ${OLLAMA_URL}. Is it running?`,
       );
     } else {
       logger.error(`Error sending request to Ollama: ${axiosError.message}`);

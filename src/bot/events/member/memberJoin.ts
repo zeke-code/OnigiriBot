@@ -14,18 +14,20 @@ export default {
     const welcomeEmbed = new EmbedBuilder()
       .setColor("#ffffff")
       .setTitle("Welcome to the Server!")
-      .setDescription(`${(await prisma.guild.findFirst({ where: { guildId: guildId } }))?.welcomeMessage || "We're glad to have you here!"}`)
+      .setDescription(
+        `${(await prisma.guild.findFirst({ where: { guildId: guildId } }))?.welcomeMessage || "We're glad to have you here!"}`,
+      )
       .setThumbnail(member.user.displayAvatarURL())
       .addFields(
         { name: "Username", value: mention, inline: true },
-        { name: "Member Count", value: `${guild.memberCount}`, inline: true }
+        { name: "Member Count", value: `${guild.memberCount}`, inline: true },
       );
 
     if (channel) {
       await channel.send({ embeds: [welcomeEmbed] });
     } else {
       logger.info(
-        `Didn't find a system channel for guild ${guild.name}, not sending any welcome message.`
+        `Didn't find a system channel for guild ${guild.name}, not sending any welcome message.`,
       );
     }
   },

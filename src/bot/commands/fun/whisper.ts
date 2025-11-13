@@ -18,7 +18,7 @@ const whisperCommand = {
         .setName("message")
         .setDescription("Your anonymous message!")
         .setMaxLength(500)
-        .setRequired(true)
+        .setRequired(true),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -64,7 +64,7 @@ const whisperCommand = {
         ephemeral: true,
       });
       logger.error(
-        `Something went wrong while trying to whisper a message: ${e}`
+        `Something went wrong while trying to whisper a message: ${e}`,
       );
     }
   },

@@ -36,7 +36,7 @@ const eightBallCommand = {
         .setName("question")
         .setDescription("Write a question you'd like to ask me!")
         .setRequired(true)
-        .setMaxLength(100)
+        .setMaxLength(100),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -52,7 +52,7 @@ const eightBallCommand = {
       .setTitle(`🎱 8Ball with ${interaction.member?.user.username}`)
       .addFields(
         { name: "Question:", value: `${question}` },
-        { name: "Response:", value: `${response}` }
+        { name: "Response:", value: `${response}` },
       );
 
     await interaction.reply({ embeds: [embed] });

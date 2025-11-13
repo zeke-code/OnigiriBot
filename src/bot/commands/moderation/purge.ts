@@ -11,7 +11,7 @@ const purgeCommand = {
   data: new SlashCommandBuilder()
     .setName("purge")
     .setDescription(
-      "Deletes a specified amount of recent messages from a channel!"
+      "Deletes a specified amount of recent messages from a channel!",
     )
     .setContexts([InteractionContextType.Guild])
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages)
@@ -19,7 +19,7 @@ const purgeCommand = {
       option
         .setName("amount")
         .setDescription("The number of messages to delete")
-        .setRequired(true)
+        .setRequired(true),
     ),
 
   async execute(interaction: ChatInputCommandInteraction) {
@@ -38,11 +38,11 @@ const purgeCommand = {
     try {
       const deletedMessages = await channel.bulkDelete(amount, true);
       await interaction.reply(
-        `I deleted **${deletedMessages.size} recent messages** from this channel under ${interaction.member}'s request!`
+        `I deleted **${deletedMessages.size} recent messages** from this channel under ${interaction.member}'s request!`,
       );
     } catch (error) {
       logger.error(
-        `Something went wrong while trying to purge messages from a channel: ${error}`
+        `Something went wrong while trying to purge messages from a channel: ${error}`,
       );
       await interaction.reply({
         content: "Something went wrong. Try again later.",

@@ -1,68 +1,54 @@
 import {
   SlashCommandBuilder,
-  EmbedBuilder,
+  ChatInputCommandInteraction,
   InteractionContextType,
+  GuildMember,
 } from "discord.js";
-import { useQueue } from "discord-player";
-import logger from "../../../utils/logger";
-import { createMusicEmbed } from "../../../utils/music/musicEmbed";
+import { ExtendedClient } from "../../../types/ExtendedClient";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("stop")
     .setContexts([InteractionContextType.Guild])
     .setDescription(
-      "Makes me stop playing music and deletes current playlist!"
+      "Stops the music, clears the queue, and disconnects the bot.",
     ),
 
-  async execute(interaction: any) {
-    if (!interaction.member.voice.channelId) {
-      return await interaction.reply({
-        content: "You are not in a voice channel!",
-        ephemeral: true,
-      });
+  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+    if (!interaction.guildId || !(interaction.member instanceof GuildMember)) {
+      return;
     }
 
-    if (
-      interaction.guild.members.me?.voice?.channelId &&
-      interaction.member.voice.channelId !==
-        interaction.guild.members.me.voice.channelId
-    ) {
-      return interaction.reply({
-        content: "You are not in my voice channel!",
-        ephemeral: true,
-      });
-    }
+    const client = interaction.client as ExtendedClient;
+    const queue = client.musicManager.queues.get(interaction.guildId);
 
-    const queue = useQueue(interaction.guildId);
     if (!queue) {
-      return await interaction.reply({
-        content: `I'm not playing music in this server!`,
+      await interaction.reply({
+        content: "I'm not playing anything right now.",
         ephemeral: true,
       });
+      return;
+    }
+
+    if (interaction.member.voice.channel?.id !== queue.voiceChannel?.id) {
+      await interaction.reply({
+        content:
+          "You must be in the same voice channel as me to stop the music.",
+        ephemeral: true,
+      });
+      return;
     }
 
     try {
-      queue.node.stop();
-      queue.delete();
+      await queue.destroy();
 
-      const embed = createMusicEmbed()
-        .setTitle("⏹️ Music Player Stopped")
-        .addFields({
-          name: "Requested by",
-          value: `${interaction.member}`,
-          inline: true,
-        })
-        .setColor("#000000");
-
-      await interaction.reply({ embeds: [embed] });
-    } catch (e) {
-      logger.error(
-        `Something went wrong trying to stop player in guild ${interaction.guildId}: ${e}`
+      await interaction.reply(
+        "⏹️ The music has been stopped and the queue has been cleared.",
       );
-      return await interaction.reply({
-        content:
-          "Something went wrong while trying to stop the music player. Try again later!",
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({
+        content: "An error occurred while trying to stop the player.",
         ephemeral: true,
       });
     }

@@ -1,86 +1,52 @@
 import {
   SlashCommandBuilder,
-  EmbedBuilder,
+  ChatInputCommandInteraction,
   InteractionContextType,
+  GuildMember,
 } from "discord.js";
-import { useQueue } from "discord-player";
-import logger from "../../../utils/logger";
-import { createMusicEmbed } from "../../../utils/music/musicEmbed";
+import { ExtendedClient } from "../../../types/ExtendedClient";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("skip")
     .setContexts([InteractionContextType.Guild])
-    .setDescription("Skip the current track playing in the playlist!"),
+    .setDescription("Skips the current track."),
 
-  async execute(interaction: any) {
-    if (
-      interaction.guild.members.me?.voice?.channelId &&
-      interaction.member.voice.channelId !==
-        interaction.guild.members.me.voice.channelId
-    ) {
-      return interaction.reply({
-        content: "You are not in my voice channel!",
-        ephemeral: true,
-      });
+  async execute(interaction: ChatInputCommandInteraction): Promise<void> {
+    if (!interaction.guildId || !(interaction.member instanceof GuildMember)) {
+      return;
     }
 
-    const queue = useQueue(interaction.guildId);
-    if (!queue) {
-      return interaction.reply({
-        content: "There doesn't seem to be any active playlist in this server.",
+    const client = interaction.client as ExtendedClient;
+    const queue = client.musicManager.queues.get(interaction.guildId);
+
+    if (!queue || !queue.isPlaying || !queue.currentTrack) {
+      await interaction.reply({
+        content: "There is nothing playing to skip.",
         ephemeral: true,
       });
+      return;
     }
 
-    const currentTrack = queue.currentTrack;
-    const nextTrack = queue.tracks.at(0);
+    if (interaction.member.voice.channel?.id !== queue.voiceChannel?.id) {
+      await interaction.reply({
+        content:
+          "You must be in the same voice channel as me to use this command.",
+        ephemeral: true,
+      });
+      return;
+    }
 
     try {
-      queue.node.skip();
-      if (queue.isEmpty()) queue.delete();
+      const skippedTrackTitle = queue.currentTrack.info.title;
 
-       const embed = createMusicEmbed()
-        .setColor("DarkRed")
-        .setTitle("⏭️ Track Skipped")
-        .setDescription(
-          `Successfully skipped **[${currentTrack?.title}](${currentTrack?.url})**.`
-        );
+      await queue.skip();
 
-      if (nextTrack) {
-        embed.addFields({
-          name: "Now Playing",
-          value: `**[${nextTrack.title}](${nextTrack.url})**`,
-          inline: true,
-        });
-      } else {
-        embed.addFields({
-          name: "Now Playing",
-          value: "Nothing!",
-          inline: true,
-        });
-        // If the queue is empty after skipping, it will be deleted by the disconnect event.
-      }
-
-      // We add the requested field after the others for style purposes.
-      embed.addFields({
-          name: "Requested by",
-          value: `${interaction.member}`,
-          inline: true,
-        })
-
-      if (currentTrack?.thumbnail) {
-        embed.setThumbnail(currentTrack.thumbnail);
-      }
-
-      await interaction.reply({ embeds: [embed] });
-    } catch (e) {
-      logger.error(
-        `Something went wrong while trying to skip a song in guild ${interaction.guildId}: ${e}`
-      );
-      return await interaction.reply({
-        content:
-          "Something went wrong while trying to skip the song. Try again later!",
+      await interaction.reply(`⏭️ Skipped **${skippedTrackTitle}**.`);
+    } catch (error) {
+      console.error(error);
+      await interaction.reply({
+        content: "An error occurred while trying to skip the track.",
         ephemeral: true,
       });
     }

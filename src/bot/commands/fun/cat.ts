@@ -14,7 +14,7 @@ const catCommand = {
   async execute(interaction: CommandInteraction) {
     try {
       const response = await axios.get(
-        "https://api.thecatapi.com/v1/images/search"
+        "https://api.thecatapi.com/v1/images/search",
       );
       const url = response.data[0]?.url;
 
@@ -27,7 +27,7 @@ const catCommand = {
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       logger.error(
-        `Error while trying to retrieve cat image from API: ${error}`
+        `Error while trying to retrieve cat image from API: ${error}`,
       );
       await interaction.reply({
         content: "Something went wrong with the request. Try again.",

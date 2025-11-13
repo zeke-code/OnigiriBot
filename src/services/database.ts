@@ -1,10 +1,10 @@
-import { PrismaClient } from '../generated/prisma';
-import logger from '../utils/logger';
+import { PrismaClient } from "../generated/prisma";
+import logger from "../utils/logger";
 
 export const prisma = new PrismaClient({
   log: [
-    { emit: 'stdout', level: 'warn' },
-    { emit: 'stdout', level: 'error' },
+    { emit: "stdout", level: "warn" },
+    { emit: "stdout", level: "error" },
   ],
 });
 
@@ -18,7 +18,9 @@ const connectToDatabase = async (): Promise<void> => {
     await prisma.$connect();
     logger.info("Successfully connected to PostgreSQL database!");
   } catch (error) {
-    logger.error(`Could not connect to the database: ${(error as Error).message}`);
+    logger.error(
+      `Could not connect to the database: ${(error as Error).message}`,
+    );
     // If the database isn't available, the bot can't run.
     process.exit(1);
   }
