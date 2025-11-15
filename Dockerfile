@@ -1,5 +1,5 @@
 # Base image is node 23 alpine to keep the container as light as possible
-FROM node:23-alpine
+FROM node:24-alpine
 
 # Install needed dependencies
 RUN apk update && apk add ffmpeg
