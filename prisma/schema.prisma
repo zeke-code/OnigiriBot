@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Model for storing server-specific configurations
+model Guild {
+  guildId          String  @id // The Discord Guild ID is the primary key
+  prefix           String? @default("!")
+  logChannelId     String?
+  welcomeChannelId String?
+  welcomeMessage   String?
+  goodbyeMessage   String?
+  goodbyeMessageId String?
+
+  // A Guild has many Members and many ModerationLogs
+  members        Member[]
+  moderationLogs ModerationLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  userId  String @id // The Discord User ID is the primary key
+  balance BigInt @default(0)
+
+  // A User can have many Memberships (one for each server they are in)
+  memberships    Member[]
+
+  actionsTaken   ModerationLog[] @relation("ModeratorActions")
+  actionsAgainst ModerationLog[] @relation("UserActions")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// It connects a User to a Guild and stores the data for that specific relationship.
+model Member {
+  id      Int @id @default(autoincrement()) // A unique ID for the membership record
+  xp      Int @default(0)  // XP in the server
+  level   Int @default(1)  // Level is also per-server
+
+  // The relation to the User model
+  user    User   @relation(fields: [userId], references: [userId])
+  userId  String
+
+  // The relation to the Guild model
+  guild   Guild  @relation(fields: [guildId], references: [guildId])
+  guildId String
+
+  // This ensures a user can only be a member of a guild ONCE.
+  // It's also critical for making queries efficient.
+  @@unique([userId, guildId])
+}
+
+// Model for logging moderation actions (cases)
+model ModerationLog {
+  id          Int      @id @default(autoincrement())
+  guild       Guild    @relation(fields: [guildId], references: [guildId])
+  guildId     String
+  user        User     @relation("UserActions", fields: [userId], references: [userId])
+  userId      String
+  moderator   User     @relation("ModeratorActions", fields: [moderatorId], references: [userId])
+  moderatorId String
+  action      ModAction
+  reason      String?  @default("No reason provided.")
+  duration    DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([guildId])
+}
+
+enum ModAction {
+  WARN
+  MUTE
+  KICK
+  BAN
+  UNMUTE
+  UNBAN
+}
