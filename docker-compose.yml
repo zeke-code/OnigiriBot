@@ -43,7 +43,7 @@ services:
     ports:
       - "2333:2333"
     volumes:
-      - ./application.yml:/opt/Lavalink/application.yml
+      - ./lavalink-config.yml:/opt/Lavalink/application.yml
 
 volumes:
   postgres-data:

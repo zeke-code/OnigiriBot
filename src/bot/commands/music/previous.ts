@@ -3,10 +3,9 @@ import {
   ChatInputCommandInteraction,
   InteractionContextType,
   GuildMember,
-  EmbedBuilder,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
-import { createMusicEmbed } from "../../../utils/music/musicEmbed";
+import { createMusicEmbed } from "../../music/musicEmbed";
 
 export default {
   data: new SlashCommandBuilder()
@@ -22,7 +21,6 @@ export default {
     const client = interaction.client as ExtendedClient;
     const queue = client.musicManager.queues.get(interaction.guildId);
 
-    // Controlla se esiste una coda
     if (!queue) {
       await interaction.reply({
         content: "I'm not playing anything right now.",
@@ -31,7 +29,6 @@ export default {
       return;
     }
 
-    // Controlla se l'utente è nel canale giusto
     if (interaction.member.voice.channel?.id !== queue.voiceChannel?.id) {
       await interaction.reply({
         content: "You must be in the same voice channel as me.",
@@ -40,7 +37,6 @@ export default {
       return;
     }
 
-    // Chiama il nostro nuovo metodo `previous`
     const previousTrack = await queue.previous();
 
     if (!previousTrack) {

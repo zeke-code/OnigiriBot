@@ -4,10 +4,11 @@ import {
   GuildMember,
   TextChannel,
   InteractionContextType,
+  MessageFlags,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
 import logger from "../../../utils/logger";
-import { createMusicEmbed } from "../../../utils/music/musicEmbed";
+import { createMusicEmbed } from "../../music/musicEmbed";
 import { Track, LoadType } from "shoukaku";
 import { GuildQueue } from "../../music/GuildQueue";
 
@@ -31,7 +32,7 @@ export default {
     ) {
       return interaction.reply({
         content: "This command can only be used in a server.",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -42,19 +43,20 @@ export default {
     if (!voiceChannel) {
       return interaction.reply({
         content: "You need to be in a voice channel to play music!",
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral
+      });
+    }
+
+    const node = musicManager.shoukaku.getIdealNode();
+    if (!node) {
+      return interaction.reply({
+        content: "No available music node to process your request.",
+        flags: MessageFlags.Ephemeral
       });
     }
 
     const query = interaction.options.getString("query", true);
     await interaction.deferReply();
-
-    const node = musicManager.shoukaku.getIdealNode();
-    if (!node) {
-      return interaction.followUp({
-        content: "No available music node to process your request.",
-      });
-    }
 
     const result = await node.rest.resolve(query);
     if (
