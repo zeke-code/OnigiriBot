@@ -7,7 +7,6 @@ import {
   MessageFlags,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
-import logger from "../../../utils/logger";
 import { createMusicEmbed } from "../../music/musicEmbed";
 import { Track, LoadType } from "shoukaku";
 import { GuildQueue } from "../../music/GuildQueue";
@@ -32,7 +31,7 @@ export default {
     ) {
       return interaction.reply({
         content: "This command can only be used in a server.",
-        flags: MessageFlags.Ephemeral
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -43,7 +42,7 @@ export default {
     if (!voiceChannel) {
       return interaction.reply({
         content: "You need to be in a voice channel to play music!",
-        flags: MessageFlags.Ephemeral
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -51,7 +50,7 @@ export default {
     if (!node) {
       return interaction.reply({
         content: "No available music node to process your request.",
-        flags: MessageFlags.Ephemeral
+        flags: MessageFlags.Ephemeral,
       });
     }
 
@@ -98,16 +97,17 @@ export default {
         tracks = result.data.tracks;
         responseMessage = `Added **${tracks.length}** songs from playlist **${result.data.info.name}** to the queue.`;
         break;
-      default:
-        const exhaustiveCheck: never = result;
+      default: {
+        const _exhaustiveCheck: never = result;
         return interaction.followUp({
           content: "I couldn't load this track or playlist.",
         });
+      }
     }
 
     queue.addTracks(tracks);
 
-    const embed = createMusicEmbed()
+    const embed = createMusicEmbed(interaction.client)
       .setTitle("✅ Music Queued")
       .setDescription(responseMessage);
 

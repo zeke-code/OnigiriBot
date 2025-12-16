@@ -6,7 +6,9 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
  * @param isPaused - Whether the player is currently paused.
  * @returns An array of ActionRows containing the buttons.
  */
-export function createMusicButtons(isPaused: boolean = false): ActionRowBuilder<ButtonBuilder>[] {
+export function createMusicButtons(
+  isPaused: boolean = false,
+): ActionRowBuilder<ButtonBuilder>[] {
   // Row 1: Playback Controls
   const previous = new ButtonBuilder()
     .setCustomId("music_previous")
@@ -55,13 +57,13 @@ export function createMusicButtons(isPaused: boolean = false): ActionRowBuilder<
     previous,
     pauseResume,
     stop,
-    skip
+    skip,
   );
 
   const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(
     volDown,
     shuffle,
-    volUp
+    volUp,
   );
 
   return [row1, row2];

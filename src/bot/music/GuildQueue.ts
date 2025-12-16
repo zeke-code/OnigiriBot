@@ -107,7 +107,7 @@ export class GuildQueue {
     if (this.history.length === 0) return null;
 
     const previousTrack = this.history.pop()!;
-    
+
     // Put current track back to the start of the queue
     if (this.currentTrack) {
       this.tracks.unshift(this.currentTrack);
@@ -187,33 +187,37 @@ export class GuildQueue {
       if (!this.currentTrack) return;
 
       const trackInfo = this.currentTrack.info;
-      
+
       logger.info(
         `Started playing ${trackInfo.title} in guild ${this.guildId}`,
       );
 
-      const artworkUrl = (trackInfo as any).artworkUrl || this.manager.client.user?.displayAvatarURL();
+      const artworkUrl =
+        (trackInfo as any).artworkUrl ||
+        this.manager.client.user?.displayAvatarURL();
 
       const embed = createMusicEmbed(this.manager.client)
         .setTitle("💿 Now Playing")
         .setDescription(`**[${trackInfo.title}](${trackInfo.uri})**`)
         .setThumbnail(artworkUrl)
         .addFields(
-          { 
-            name: "👤 Artist", 
-            value: trackInfo.author || "Unknown Artist", 
-            inline: true 
+          {
+            name: "👤 Artist",
+            value: trackInfo.author || "Unknown Artist",
+            inline: true,
           },
-          { 
-            name: "⏳ Duration", 
-            value: trackInfo.isStream ? "🔴 LIVE" : formatTime(trackInfo.length), 
-            inline: true 
+          {
+            name: "⏳ Duration",
+            value: trackInfo.isStream
+              ? "🔴 LIVE"
+              : formatTime(trackInfo.length),
+            inline: true,
           },
-          { 
-            name: "🔊 Volume", 
-            value: `${this.volume}%`, 
-            inline: true 
-          }
+          {
+            name: "🔊 Volume",
+            value: `${this.volume}%`,
+            inline: true,
+          },
         )
         .setColor("#1DB954");
 
@@ -259,7 +263,8 @@ export class GuildQueue {
       const member = i.guild?.members.cache.get(i.user.id);
       if (member?.voice.channelId !== this.voiceChannel?.id) {
         i.reply({
-          content: "You must be in the same voice channel to use these buttons!",
+          content:
+            "You must be in the same voice channel to use these buttons!",
           ephemeral: true,
         });
         return false;
@@ -270,30 +275,42 @@ export class GuildQueue {
     const collector = message.createMessageComponentCollector({
       componentType: ComponentType.Button,
       filter: filter,
-      time: (this.currentTrack?.info.length || 0) > 0 ? this.currentTrack!.info.length : undefined,
+      time:
+        (this.currentTrack?.info.length || 0) > 0
+          ? this.currentTrack!.info.length
+          : undefined,
     });
 
     collector.on("collect", async (interaction) => {
       try {
         // Handle Volume Buttons
         if (interaction.customId === "music_volup") {
-            const newVol = this.volume + 10;
-            await this.setVolume(newVol);
-            await interaction.reply({ content: `🔊 Volume increased to ${this.volume}%`, ephemeral: true });
-            return;
+          const newVol = this.volume + 10;
+          await this.setVolume(newVol);
+          await interaction.reply({
+            content: `🔊 Volume increased to ${this.volume}%`,
+            ephemeral: true,
+          });
+          return;
         }
         if (interaction.customId === "music_voldown") {
-            const newVol = this.volume - 10;
-            await this.setVolume(newVol);
-            await interaction.reply({ content: `🔉 Volume decreased to ${this.volume}%`, ephemeral: true });
-            return;
+          const newVol = this.volume - 10;
+          await this.setVolume(newVol);
+          await interaction.reply({
+            content: `🔉 Volume decreased to ${this.volume}%`,
+            ephemeral: true,
+          });
+          return;
         }
 
         // Handle Shuffle
         if (interaction.customId === "music_shuffle") {
-            this.shuffle();
-            await interaction.reply({ content: "🔀 Queue shuffled!", ephemeral: true });
-            return;
+          this.shuffle();
+          await interaction.reply({
+            content: "🔀 Queue shuffled!",
+            ephemeral: true,
+          });
+          return;
         }
 
         // For Playback controls, we defer update to not change the view
@@ -302,9 +319,12 @@ export class GuildQueue {
         switch (interaction.customId) {
           case "music_previous":
             if (this.history.length === 0) {
-                await interaction.followUp({ content: "No previous track found.", ephemeral: true });
+              await interaction.followUp({
+                content: "No previous track found.",
+                ephemeral: true,
+              });
             } else {
-                await this.previous();
+              await this.previous();
             }
             break;
 
@@ -314,7 +334,9 @@ export class GuildQueue {
 
           case "music_stop":
             await this.destroy();
-            await this.textChannel?.send("Stopped the music via button control.");
+            await this.textChannel?.send(
+              "Stopped the music via button control.",
+            );
             break;
 
           case "music_skip":
@@ -322,7 +344,10 @@ export class GuildQueue {
             break;
         }
       } catch (error) {
-        logger.error(`Error handling button interaction in guild ${this.guildId}`, error);
+        logger.error(
+          `Error handling button interaction in guild ${this.guildId}`,
+          error,
+        );
       }
     });
   }
