@@ -1,27 +1,29 @@
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import logger from "../utils/logger";
 
+const connectionString = `${process.env.DATABASE_URL}`;
+const pool = new Pool({ connectionString });
+
+const adapter = new PrismaPg(pool);
+
 export const prisma = new PrismaClient({
+  adapter,
   log: [
     { emit: "stdout", level: "warn" },
     { emit: "stdout", level: "error" },
   ],
 });
 
-/**
- * Connects to the database by sending a test query.
- * If it fails, the application will exit.
- */
 const connectToDatabase = async (): Promise<void> => {
   try {
-    // prisma.$connect() establishes the connection pool.
     await prisma.$connect();
     logger.info("Successfully connected to PostgreSQL database!");
   } catch (error) {
     logger.error(
       `Could not connect to the database: ${(error as Error).message}`,
     );
-    // If the database isn't available, the bot can't run.
     process.exit(1);
   }
 };
