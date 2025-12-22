@@ -36,7 +36,7 @@ services:
       - redis-data:/data
 
   lavalink:
-    image: ghcr.io/lavalink-devs/lavalink:4.1.1
+    image: ghcr.io/lavalink-devs/lavalink:4.1.2
     restart: unless-stopped
     env_file:
       - .env
