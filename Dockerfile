@@ -1,14 +1,31 @@
-# Base image is node 24 alpine to keep the container as light as possible
-FROM node:24-alpine
+FROM node:24-alpine AS builder
 
-# Set work directory
-WORKDIR /onigiribot
+WORKDIR /app
 
-# Copy all files contained in current host folder into container
+COPY package*.json ./
+COPY prisma ./prisma/
+
+RUN npm ci
+
 COPY . .
 
-# Install dependencies
-RUN npm ci && npx prisma generate && npm run build
+# Provide a dummy DATABASE_URL for the build step
+# Prisma needs the variable to exist to validate the schema, but doesn't need a real connection yet.
+ENV DATABASE_URL="postgresql://dummy:5432/mydb"
 
-# Set container entrypoint to run the server on spin up
-CMD ["npm", "run", "start"]
+RUN npx prisma generate && npm run build
+
+FROM node:24-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+USER node
+
+COPY --from=builder --chown=node:node /app/package*.json ./
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/build ./build
+COPY --from=builder --chown=node:node /app/prisma ./prisma
+
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
