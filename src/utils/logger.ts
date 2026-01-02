@@ -1,38 +1,35 @@
 import winston from "winston";
-import fs from "fs";
-import path from "path";
 
-const logDir: string = path.join(__dirname, "../../logs");
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir);
-}
+const isProduction = process.env.NODE_ENV === "production";
 
-const timestamp: string = new Date().toISOString().replace(/[:.]/g, "-");
-const logFilePath: string = path.join(logDir, `log-${timestamp}.log`);
+const prodFormat = winston.format.combine(
+  winston.format.timestamp(),
+  winston.format.errors({ stack: true }),
+  winston.format.json(),
+);
+
+const devFormat = winston.format.combine(
+  winston.format.colorize(),
+  winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+  winston.format.errors({ stack: true }),
+  winston.format.printf(({ timestamp, level, message, stack, ...meta }) => {
+    const metaString = Object.keys(meta).length
+      ? `\n${JSON.stringify(meta, null, 2)}`
+      : "";
+    return `${timestamp} [${level}]: ${message} ${stack || ""} ${metaString}`;
+  }),
+);
+
+const transports: winston.transport[] = [
+  new winston.transports.Console({
+    format: isProduction ? prodFormat : devFormat,
+  }),
+];
 
 const logger = winston.createLogger({
-  level: process.env.NODE_ENV === "production" ? "info" : "debug",
-  format: winston.format.combine(
-    winston.format.timestamp({
-      format: "YYYY-MM-DD HH:mm:ss",
-    }),
-    winston.format.errors({ stack: true }),
-    winston.format.splat(),
-    winston.format.json(),
-  ),
-  defaultMeta: { service: "OnigiriBot" },
-  transports: [new winston.transports.File({ filename: logFilePath })],
+  level: isProduction ? "info" : "debug",
+  defaultMeta: { service: "onigiribot" },
+  transports,
 });
-
-if (process.env.NODE_ENV !== "production") {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple(),
-      ),
-    }),
-  );
-}
 
 export default logger;

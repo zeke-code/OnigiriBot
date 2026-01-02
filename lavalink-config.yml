@@ -51,7 +51,3 @@ plugins:
       countryCode: "US"
       playlistLoadLimit: 6
       albumLoadLimit: 6
-# logging:
-#   level:
-#     root: INFO
-#     lavalink: INFO
