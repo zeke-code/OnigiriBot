@@ -1,0 +1,22 @@
+name: lint
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Node.js and install dependencies
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+      - run: npm ci
+      - name: Run Linter
+        run: npm run lint
