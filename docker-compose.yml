@@ -8,8 +8,6 @@ services:
     depends_on:
       postgres:
         condition: service_started
-      redis:
-        condition: service_started
       lavalink:
         condition: service_started
 
