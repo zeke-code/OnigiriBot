@@ -42,7 +42,10 @@ export default {
 
       await queue.skip();
 
-      await interaction.reply(`⏭️ Skipped **${skippedTrackTitle}**.`);
+      await interaction.reply({
+        content: `⏭️ Skipped **${skippedTrackTitle}**.`,
+        ephemeral: true,
+      });
     } catch (error) {
       console.error(error);
       await interaction.reply({

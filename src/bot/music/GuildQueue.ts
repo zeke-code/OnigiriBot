@@ -5,6 +5,7 @@ import {
   ComponentType,
   ButtonInteraction,
   CollectorFilter,
+  InteractionCollector,
 } from "discord.js";
 import { Player, Track } from "shoukaku";
 import { MusicManager } from "./MusicManager";
@@ -27,6 +28,7 @@ export class GuildQueue {
   public textChannel: TextChannel | null = null;
   public voiceChannel: VoiceBasedChannel | null = null;
   public nowPlayingMessage: Message | null = null;
+  public collector: InteractionCollector<ButtonInteraction> | null = null;
 
   constructor(manager: MusicManager, guildId: string) {
     this.manager = manager;
@@ -165,6 +167,11 @@ export class GuildQueue {
     this.tracks = [];
     this.isPlaying = false;
 
+    if (this.collector) {
+      this.collector.stop();
+      this.collector = null;
+    }
+
     if (this.nowPlayingMessage) {
       // clear buttons from old message
       await this.nowPlayingMessage.edit({ components: [] }).catch(() => {});
@@ -222,12 +229,29 @@ export class GuildQueue {
         .setColor("#1DB954");
 
       if (this.textChannel) {
-        this.nowPlayingMessage = await this.textChannel.send({
-          embeds: [embed],
-          components: createMusicButtons(this.isPaused),
-        });
+        if (this.nowPlayingMessage) {
+          try {
+            await this.nowPlayingMessage.edit({
+              embeds: [embed],
+              components: createMusicButtons(this.isPaused),
+            });
+            if (this.collector) this.collector.stop();
+            this._setupCollector(this.nowPlayingMessage);
+          } catch (error) {
+            this.nowPlayingMessage = await this.textChannel.send({
+              embeds: [embed],
+              components: createMusicButtons(this.isPaused),
+            });
+            this._setupCollector(this.nowPlayingMessage);
+          }
+        } else {
+          this.nowPlayingMessage = await this.textChannel.send({
+            embeds: [embed],
+            components: createMusicButtons(this.isPaused),
+          });
 
-        this._setupCollector(this.nowPlayingMessage);
+          this._setupCollector(this.nowPlayingMessage);
+        }
       }
     });
 
@@ -235,9 +259,9 @@ export class GuildQueue {
       logger.info(
         `Track ended in guild ${this.guildId}. Reason: ${reason?.reason}`,
       );
-      if (this.nowPlayingMessage) {
-        await this.nowPlayingMessage.delete().catch(() => {});
-        this.nowPlayingMessage = null;
+      if (this.collector) {
+        this.collector.stop();
+        this.collector = null;
       }
       await this.handleTrackEnd();
     });
@@ -280,6 +304,8 @@ export class GuildQueue {
           ? this.currentTrack!.info.length
           : undefined,
     });
+
+    this.collector = collector;
 
     collector.on("collect", async (interaction) => {
       try {
