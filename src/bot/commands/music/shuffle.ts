@@ -5,6 +5,7 @@ import {
   GuildMember,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
+import { createShuffleEmbed } from "../../music/embedFactories";
 
 export default {
   data: new SlashCommandBuilder()
@@ -40,9 +41,9 @@ export default {
     try {
       queue.shuffle();
 
-      await interaction.reply({
-        content: "🔀 The queue has been successfully shuffled!",
-      });
+      const embed = createShuffleEmbed(client);
+
+      await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
       await interaction.reply({

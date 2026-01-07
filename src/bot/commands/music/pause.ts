@@ -5,6 +5,7 @@ import {
   GuildMember,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
+import { createPauseEmbed } from "../../music/embedFactories";
 
 export default {
   data: new SlashCommandBuilder()
@@ -41,11 +42,9 @@ export default {
       const shouldPause = !queue.isPaused;
       await queue.pause(shouldPause);
 
-      const replyMessage = shouldPause
-        ? "⏸️ The player has been paused."
-        : "▶️ The player has been resumed.";
+      const embed = createPauseEmbed(client, shouldPause);
 
-      await interaction.reply(replyMessage);
+      await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
       await interaction.reply({

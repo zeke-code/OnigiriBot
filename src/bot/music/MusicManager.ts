@@ -71,4 +71,10 @@ export class MusicManager {
     }
     return queue;
   }
+
+  public async search(query: string) {
+    const node = this.shoukaku.getIdealNode();
+    if (!node) return null;
+    return node.rest.resolve(query);
+  }
 }

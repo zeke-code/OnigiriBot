@@ -10,9 +10,16 @@ import {
 import { Player, Track } from "shoukaku";
 import { MusicManager } from "./MusicManager";
 import logger from "../../utils/logger";
-import { createMusicEmbed } from "./musicEmbed";
+import {
+  createMusicEmbed,
+  createVolumeEmbed,
+  createShuffleEmbed,
+  createStopEmbed,
+  createNowPlayingEmbed,
+} from "./embedFactories";
 import { createMusicButtons } from "./musicComponents";
 import { formatTime } from "../../utils/formatTime";
+import { MUSIC_BUTTONS } from "./constants";
 
 export class GuildQueue {
   public readonly manager: MusicManager;
@@ -23,6 +30,7 @@ export class GuildQueue {
   public currentTrack: Track | null = null;
   public isPlaying = false;
   public isPaused = false;
+  public isShuffled = false;
   public volume = 100;
 
   public textChannel: TextChannel | null = null;
@@ -93,16 +101,7 @@ export class GuildQueue {
     await this.player.setPaused(state);
     this.isPaused = state;
 
-    // Update the buttons on the message to show "Resume" or "Pause"
-    if (this.nowPlayingMessage) {
-      try {
-        await this.nowPlayingMessage.edit({
-          components: createMusicButtons(this.isPaused),
-        });
-      } catch (e) {
-        // Message might be deleted, ignore
-      }
-    }
+    await this.updateNowPlayingMessage();
   }
 
   public async previous(): Promise<Track | null> {
@@ -131,6 +130,8 @@ export class GuildQueue {
       const j = Math.floor(Math.random() * (i + 1));
       [this.tracks[i], this.tracks[j]] = [this.tracks[j], this.tracks[i]];
     }
+    this.isShuffled = true;
+    this.updateNowPlayingMessage();
   }
 
   public async setVolume(volume: number): Promise<boolean> {
@@ -138,7 +139,31 @@ export class GuildQueue {
     const clampedVolume = Math.max(0, Math.min(volume, 150));
     await this.player.setGlobalVolume(clampedVolume);
     this.volume = clampedVolume;
+    this.updateNowPlayingMessage();
     return true;
+  }
+
+  public async updateNowPlayingMessage() {
+    if (!this.nowPlayingMessage || !this.currentTrack) return;
+
+    try {
+      const embed = createNowPlayingEmbed(
+        this.manager.client,
+        this.currentTrack,
+        this.volume,
+        this.isShuffled,
+      );
+
+      await this.nowPlayingMessage.edit({
+        embeds: [embed],
+        components: createMusicButtons(this.isPaused),
+      });
+    } catch (error) {
+      logger.error(
+        `Failed to update now playing message in guild ${this.guildId}`,
+        error,
+      );
+    }
   }
 
   public async connect(voiceChannel: VoiceBasedChannel) {
@@ -199,34 +224,12 @@ export class GuildQueue {
         `Started playing ${trackInfo.title} in guild ${this.guildId}`,
       );
 
-      const artworkUrl =
-        (trackInfo as any).artworkUrl ||
-        this.manager.client.user?.displayAvatarURL();
-
-      const embed = createMusicEmbed(this.manager.client)
-        .setTitle("💿 Now Playing")
-        .setDescription(`**[${trackInfo.title}](${trackInfo.uri})**`)
-        .setThumbnail(artworkUrl)
-        .addFields(
-          {
-            name: "👤 Artist",
-            value: trackInfo.author || "Unknown Artist",
-            inline: true,
-          },
-          {
-            name: "⏳ Duration",
-            value: trackInfo.isStream
-              ? "🔴 LIVE"
-              : formatTime(trackInfo.length),
-            inline: true,
-          },
-          {
-            name: "🔊 Volume",
-            value: `${this.volume}%`,
-            inline: true,
-          },
-        )
-        .setColor("#1DB954");
+      const embed = createNowPlayingEmbed(
+        this.manager.client,
+        this.currentTrack,
+        this.volume,
+        this.isShuffled,
+      );
 
       if (this.textChannel) {
         if (this.nowPlayingMessage) {
@@ -310,30 +313,35 @@ export class GuildQueue {
     collector.on("collect", async (interaction) => {
       try {
         // Handle Volume Buttons
-        if (interaction.customId === "music_volup") {
-          const newVol = this.volume + 10;
+        if (
+          interaction.customId === MUSIC_BUTTONS.VOLUME_UP ||
+          interaction.customId === MUSIC_BUTTONS.VOLUME_DOWN
+        ) {
+          const isUp = interaction.customId === MUSIC_BUTTONS.VOLUME_UP;
+          const newVol = isUp ? this.volume + 10 : this.volume - 10;
           await this.setVolume(newVol);
+
+          const embed = createVolumeEmbed(
+            this.manager.client,
+            this.volume,
+            true,
+            isUp,
+          );
+
           await interaction.reply({
-            content: `🔊 Volume increased to ${this.volume}%`,
-            ephemeral: true,
-          });
-          return;
-        }
-        if (interaction.customId === "music_voldown") {
-          const newVol = this.volume - 10;
-          await this.setVolume(newVol);
-          await interaction.reply({
-            content: `🔉 Volume decreased to ${this.volume}%`,
+            embeds: [embed],
             ephemeral: true,
           });
           return;
         }
 
         // Handle Shuffle
-        if (interaction.customId === "music_shuffle") {
+        if (interaction.customId === MUSIC_BUTTONS.SHUFFLE) {
           this.shuffle();
+          const embed = createShuffleEmbed(this.manager.client);
+
           await interaction.reply({
-            content: "🔀 Queue shuffled!",
+            embeds: [embed],
             ephemeral: true,
           });
           return;
@@ -343,7 +351,7 @@ export class GuildQueue {
         await interaction.deferUpdate();
 
         switch (interaction.customId) {
-          case "music_previous":
+          case MUSIC_BUTTONS.PREVIOUS:
             if (this.history.length === 0) {
               await interaction.followUp({
                 content: "No previous track found.",
@@ -354,18 +362,17 @@ export class GuildQueue {
             }
             break;
 
-          case "music_pause":
+          case MUSIC_BUTTONS.PAUSE:
             await this.pause(!this.isPaused);
             break;
 
-          case "music_stop":
+          case MUSIC_BUTTONS.STOP:
             await this.destroy();
-            await this.textChannel?.send(
-              "Stopped the music via button control.",
-            );
+            const stopEmbed = createStopEmbed(this.manager.client);
+            await this.textChannel?.send({ embeds: [stopEmbed] });
             break;
 
-          case "music_skip":
+          case MUSIC_BUTTONS.SKIP:
             await this.skip();
             break;
         }

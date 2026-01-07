@@ -1,5 +1,6 @@
 // filepath: src/utils/music/musicComponents.ts
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
+import { MUSIC_BUTTONS } from "./constants";
 
 /**
  * Creates the interactive buttons for the music player.
@@ -11,44 +12,44 @@ export function createMusicButtons(
 ): ActionRowBuilder<ButtonBuilder>[] {
   // Row 1: Playback Controls
   const previous = new ButtonBuilder()
-    .setCustomId("music_previous")
+    .setCustomId(MUSIC_BUTTONS.PREVIOUS)
     .setLabel("Prev")
     .setEmoji("⏮️")
     .setStyle(ButtonStyle.Secondary);
 
   const pauseResume = new ButtonBuilder()
-    .setCustomId("music_pause")
+    .setCustomId(MUSIC_BUTTONS.PAUSE)
     .setLabel(isPaused ? "Resume" : "Pause")
     .setEmoji(isPaused ? "▶️" : "⏸️")
     .setStyle(isPaused ? ButtonStyle.Success : ButtonStyle.Secondary);
 
   const stop = new ButtonBuilder()
-    .setCustomId("music_stop")
+    .setCustomId(MUSIC_BUTTONS.STOP)
     .setLabel("Stop")
     .setEmoji("⏹️")
     .setStyle(ButtonStyle.Danger);
 
   const skip = new ButtonBuilder()
-    .setCustomId("music_skip")
+    .setCustomId(MUSIC_BUTTONS.SKIP)
     .setLabel("Skip")
     .setEmoji("⏭️")
     .setStyle(ButtonStyle.Secondary);
 
   // Row 2: Volume & Shuffle
   const volDown = new ButtonBuilder()
-    .setCustomId("music_voldown")
+    .setCustomId(MUSIC_BUTTONS.VOLUME_DOWN)
     .setLabel("-10%")
     .setEmoji("🔉")
     .setStyle(ButtonStyle.Secondary);
 
   const shuffle = new ButtonBuilder()
-    .setCustomId("music_shuffle")
+    .setCustomId(MUSIC_BUTTONS.SHUFFLE)
     .setLabel("Shuffle")
     .setEmoji("🔀")
     .setStyle(ButtonStyle.Primary);
 
   const volUp = new ButtonBuilder()
-    .setCustomId("music_volup")
+    .setCustomId(MUSIC_BUTTONS.VOLUME_UP)
     .setLabel("+10%")
     .setEmoji("🔊")
     .setStyle(ButtonStyle.Secondary);

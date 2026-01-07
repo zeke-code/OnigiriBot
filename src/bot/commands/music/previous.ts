@@ -5,7 +5,7 @@ import {
   GuildMember,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
-import { createMusicEmbed } from "../../music/musicEmbed";
+import { createMusicEmbed } from "../../music/embedFactories";
 
 export default {
   data: new SlashCommandBuilder()

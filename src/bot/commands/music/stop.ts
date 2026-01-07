@@ -5,6 +5,7 @@ import {
   GuildMember,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
+import { createStopEmbed } from "../../music/embedFactories";
 
 export default {
   data: new SlashCommandBuilder()
@@ -42,9 +43,9 @@ export default {
     try {
       await queue.destroy();
 
-      await interaction.reply(
-        "⏹️ The music has been stopped and the queue has been cleared.",
-      );
+      const embed = createStopEmbed(client);
+
+      await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
       await interaction.reply({

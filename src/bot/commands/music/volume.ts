@@ -5,6 +5,7 @@ import {
   GuildMember,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
+import { createVolumeEmbed } from "../../music/embedFactories";
 
 export default {
   data: new SlashCommandBuilder()
@@ -48,13 +49,21 @@ export default {
     const newVolume = interaction.options.getInteger("level");
 
     if (newVolume === null) {
-      await interaction.reply(`🔊 The current volume is **${queue.volume}%**.`);
+      const embed = createVolumeEmbed(client, queue.volume, false);
+      await interaction.reply({ embeds: [embed] });
       return;
     }
 
     try {
+      const oldVolume = queue.volume;
       await queue.setVolume(newVolume);
-      await interaction.reply(`🔊 Volume has been set to **${newVolume}%**.`);
+      const embed = createVolumeEmbed(
+        client,
+        newVolume,
+        true,
+        newVolume > oldVolume,
+      );
+      await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error(error);
       await interaction.reply({

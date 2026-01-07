@@ -5,9 +5,12 @@ import {
   TextChannel,
   InteractionContextType,
   MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
-import { createMusicEmbed } from "../../music/musicEmbed";
+import { createAddedToQueueEmbed } from "../../music/embedFactories";
 import { Track, LoadType } from "shoukaku";
 import { GuildQueue } from "../../music/GuildQueue";
 
@@ -46,18 +49,11 @@ export default {
       });
     }
 
-    const node = musicManager.shoukaku.getIdealNode();
-    if (!node) {
-      return interaction.reply({
-        content: "No available music node to process your request.",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
     const query = interaction.options.getString("query", true);
     await interaction.deferReply();
 
-    const result = await node.rest.resolve(query);
+    const result = await musicManager.search(query);
+
     if (
       !result ||
       result.loadType === LoadType.EMPTY ||
@@ -81,37 +77,41 @@ export default {
       });
     }
 
-    let tracks: Track[];
-    let responseMessage: string;
-
+    let tracks: Track[] = [];
     switch (result.loadType) {
       case LoadType.TRACK:
         tracks = [result.data];
-        responseMessage = `Added **${tracks[0].info.title}** to the queue.`;
         break;
       case LoadType.SEARCH:
         tracks = [result.data[0]];
-        responseMessage = `Added **${tracks[0].info.title}** to the queue.`;
         break;
       case LoadType.PLAYLIST:
         tracks = result.data.tracks;
-        responseMessage = `Added **${tracks.length}** songs from playlist **${result.data.info.name}** to the queue.`;
         break;
-      default: {
-        const _exhaustiveCheck: never = result;
-        return interaction.followUp({
-          content: "I couldn't load this track or playlist.",
-        });
-      }
     }
 
     queue.addTracks(tracks);
 
-    const embed = createMusicEmbed(interaction.client)
-      .setTitle("✅ Music Queued")
-      .setDescription(responseMessage);
+    const embed = createAddedToQueueEmbed(interaction.client, result);
 
-    await interaction.followUp({ embeds: [embed] });
+    const components: ActionRowBuilder<ButtonBuilder>[] = [];
+    if (
+      result.loadType === LoadType.TRACK ||
+      result.loadType === LoadType.SEARCH
+    ) {
+      const trackInfo = tracks[0].info;
+      if (trackInfo.uri && trackInfo.uri.startsWith("http")) {
+        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setLabel("Listen on Platform")
+            .setStyle(ButtonStyle.Link)
+            .setURL(trackInfo.uri),
+        );
+        components.push(row);
+      }
+    }
+
+    await interaction.followUp({ embeds: [embed], components: components });
 
     if (!queue.isPlaying) {
       await queue.play();
