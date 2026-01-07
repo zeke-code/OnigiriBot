@@ -210,7 +210,7 @@ const rockPaperScissorsCommand = {
           components: [],
         });
       }
-    } catch (e) {
+    } catch {
       await interaction.editReply({
         content: "You didn't click anything! Cancelling game 😓",
         components: [],

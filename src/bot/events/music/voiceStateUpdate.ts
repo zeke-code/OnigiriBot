@@ -4,7 +4,7 @@ import logger from "../../../utils/logger";
 
 export default {
   name: Events.VoiceStateUpdate,
-  async execute(oldState: VoiceState, newState: VoiceState) {
+  async execute(oldState: VoiceState, _newState: VoiceState) {
     // Ignore if the event is not a user leaving a channel
     if (!oldState.channel) {
       return;

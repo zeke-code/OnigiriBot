@@ -27,12 +27,13 @@ export function createAddedToQueueEmbed(
         result.loadType === LoadType.TRACK ? result.data : result.data[0];
       const trackInfo = track.info;
       const artworkUrl =
-        (trackInfo as any).artworkUrl || client.user?.displayAvatarURL();
+        (trackInfo as { artworkUrl?: string }).artworkUrl ||
+        client.user?.displayAvatarURL();
 
       embed
         .setTitle("✅ Added to Queue")
         .setDescription(`**[${trackInfo.title}](${trackInfo.uri})**`)
-        .setThumbnail(artworkUrl)
+        .setThumbnail(artworkUrl || null)
         .addFields(
           {
             name: "👤 Artist",
@@ -54,7 +55,8 @@ export function createAddedToQueueEmbed(
       const playlistInfo = result.data.info;
       const firstTrackInfo = tracks[0]?.info;
       const artworkUrl =
-        (firstTrackInfo as any)?.artworkUrl || client.user?.displayAvatarURL();
+        (firstTrackInfo as { artworkUrl?: string })?.artworkUrl ||
+        client.user?.displayAvatarURL();
       const totalDuration = tracks.reduce(
         (acc, t) => acc + (t.info.length || 0),
         0,
@@ -63,7 +65,7 @@ export function createAddedToQueueEmbed(
       embed
         .setTitle("✅ Playlist Added")
         .setDescription(`**${playlistInfo.name}**`)
-        .setThumbnail(artworkUrl)
+        .setThumbnail(artworkUrl || null)
         .addFields(
           { name: "🔢 Tracks", value: `${tracks.length}`, inline: true },
           {
@@ -136,12 +138,13 @@ export function createNowPlayingEmbed(
 ): EmbedBuilder {
   const trackInfo = track.info;
   const artworkUrl =
-    (trackInfo as any).artworkUrl || client?.user?.displayAvatarURL();
+    (trackInfo as { artworkUrl?: string }).artworkUrl ||
+    client?.user?.displayAvatarURL();
 
   return createMusicEmbed(client)
     .setTitle("💿 Now Playing")
     .setDescription(`**[${trackInfo.title}](${trackInfo.uri})**`)
-    .setThumbnail(artworkUrl)
+    .setThumbnail(artworkUrl || null)
     .addFields(
       {
         name: "👤 Artist",

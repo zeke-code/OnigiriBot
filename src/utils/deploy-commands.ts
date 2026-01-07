@@ -20,7 +20,7 @@ const rest = new REST({ version: "10" }).setToken(token);
 
 (async () => {
   try {
-    const commands: any[] = [];
+    const commands: unknown[] = [];
     const foldersPath = path.join(__dirname, "../bot/commands");
     const commandFolders = fs.readdirSync(foldersPath);
 
@@ -50,12 +50,9 @@ const rest = new REST({ version: "10" }).setToken(token);
       `Started refreshing ${commands.length} application (/) commands.`,
     );
 
-    const data: any = await rest.put(
-      Routes.applicationCommands(applicationId),
-      {
-        body: commands,
-      },
-    );
+    const data = (await rest.put(Routes.applicationCommands(applicationId), {
+      body: commands,
+    })) as unknown[];
 
     logger.info(
       `Successfully reloaded ${data.length} application (/) commands.`,

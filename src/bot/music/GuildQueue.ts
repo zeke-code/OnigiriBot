@@ -11,14 +11,12 @@ import { Player, Track } from "shoukaku";
 import { MusicManager } from "./MusicManager";
 import logger from "../../utils/logger";
 import {
-  createMusicEmbed,
   createVolumeEmbed,
   createShuffleEmbed,
   createStopEmbed,
   createNowPlayingEmbed,
 } from "./embedFactories";
 import { createMusicButtons } from "./musicComponents";
-import { formatTime } from "../../utils/formatTime";
 import { MUSIC_BUTTONS } from "./constants";
 
 export class GuildQueue {
@@ -64,8 +62,8 @@ export class GuildQueue {
       await this.setVolume(this.volume); // Ensure volume is applied on play
       this.isPlaying = true;
       this.isPaused = false;
-    } catch (error) {
-      logger.error(`Error playing track in guild ${this.guildId}`, error);
+    } catch (_error) {
+      logger.error(`Error playing track in guild ${this.guildId}`, _error);
       await this.handleTrackEnd();
     }
   }
@@ -366,11 +364,12 @@ export class GuildQueue {
             await this.pause(!this.isPaused);
             break;
 
-          case MUSIC_BUTTONS.STOP:
+          case MUSIC_BUTTONS.STOP: {
             await this.destroy();
             const stopEmbed = createStopEmbed(this.manager.client);
             await this.textChannel?.send({ embeds: [stopEmbed] });
             break;
+          }
 
           case MUSIC_BUTTONS.SKIP:
             await this.skip();

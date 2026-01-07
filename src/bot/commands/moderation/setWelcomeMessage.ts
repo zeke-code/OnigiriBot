@@ -1,7 +1,6 @@
 import {
   SlashCommandBuilder,
   PermissionFlagsBits,
-  TextChannel,
   InteractionContextType,
   ChatInputCommandInteraction,
   MessageFlags,
@@ -63,7 +62,7 @@ const setWelcomeCommand = {
         .setColor(Colors.White);
 
       await interaction.editReply({ embeds: [embed] });
-    } catch (error) {
+    } catch {
       logger.error(
         `Something went wrong while trying to update welcome message for guild ${interaction.guildId}`,
       );

@@ -1,6 +1,5 @@
 import {
   SlashCommandBuilder,
-  CommandInteraction,
   EmbedBuilder,
   TextChannel,
   InteractionContextType,

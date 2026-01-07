@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { ExtendedClient } from "../../types/ExtendedClient";
 import { Command } from "../../types/Command";
+import logger from "../../utils/logger";
 
 async function loadCommands(
   client: ExtendedClient,
@@ -27,12 +28,12 @@ async function loadCommands(
         if (command && "data" in command && "execute" in command) {
           client.commands.set(command.data.name, command);
         } else {
-          console.log(
+          logger.warn(
             `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
           );
         }
       } catch (error) {
-        console.error(`Error loading command at ${filePath}:`, error);
+        logger.error(`Error loading command at ${filePath}:`, error);
       }
     }
   }

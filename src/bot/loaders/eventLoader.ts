@@ -6,7 +6,7 @@ import logger from "../../utils/logger";
 interface Event {
   name: string;
   once?: boolean;
-  execute: (...args: any[]) => void;
+  execute: (...args: unknown[]) => void;
 }
 
 async function readEvents(client: Client, directory: string): Promise<void> {
