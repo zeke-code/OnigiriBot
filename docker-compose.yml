@@ -7,9 +7,9 @@ services:
     env_file: .env
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy
       lavalink:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
 
   postgres:
@@ -22,6 +22,11 @@ services:
       - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:4.1.2
@@ -32,6 +37,12 @@ services:
       - "2333:2333"
     volumes:
       - ./lavalink-config.yml:/opt/Lavalink/application.yml
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:2333/version || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
 
 volumes:
   postgres-data:

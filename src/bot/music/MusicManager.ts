@@ -15,10 +15,11 @@ const nodes: NodeOption[] = [
 
 const shoukakuOptions: ShoukakuOptions = {
   moveOnDisconnect: false,
-  resume: false,
-  resumeTimeout: 30,
-  reconnectTries: 2,
-  restTimeout: 10000,
+  resume: true,
+  resumeTimeout: 60,
+  reconnectTries: 10,
+  reconnectInterval: 20,
+  restTimeout: 10,
 };
 
 export class MusicManager {
