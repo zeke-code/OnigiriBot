@@ -38,7 +38,7 @@ services:
     volumes:
       - ./lavalink-config.yml:/opt/Lavalink/application.yml
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:2333/version || exit 1"]
+      test: ["CMD-SHELL", "wget --header=\"Authorization: $${LAVALINK_PASSWORD:-youshallnotpass}\" -qO- http://localhost:2333/version || exit 1"]
       interval: 5s
       timeout: 5s
       retries: 10
