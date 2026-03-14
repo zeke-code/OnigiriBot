@@ -22,10 +22,13 @@ const shoukakuOptions: ShoukakuOptions = {
   restTimeout: 10,
 };
 
+const MANUAL_RECONNECT_INTERVAL_MS = 30_000;
+
 export class MusicManager {
   public readonly client: ExtendedClient;
   public readonly shoukaku: Shoukaku;
   public readonly queues: Collection<string, GuildQueue>;
+  private readonly _reconnectTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
 
   constructor(client: ExtendedClient) {
     this.client = client;
@@ -36,11 +39,17 @@ export class MusicManager {
       shoukakuOptions,
     );
 
-    this.shoukaku.on("ready", (name, reconnected) =>
+    this.shoukaku.on("ready", (name, reconnected) => {
       logger.info(
         `Lavalink node: ${name} is now connected. ${reconnected ? "(Reconnected)" : ""}`,
-      ),
-    );
+      );
+      // Cancel any pending manual reconnect for this node
+      const timer = this._reconnectTimers.get(name);
+      if (timer) {
+        clearTimeout(timer);
+        this._reconnectTimers.delete(name);
+      }
+    });
 
     this.shoukaku.on("error", (name, error) =>
       logger.error(`Lavalink node: ${name} encountered an error.`, error),
@@ -52,11 +61,49 @@ export class MusicManager {
       ),
     );
 
+    this.shoukaku.on("disconnect", (name, count) => {
+      logger.error(
+        `Lavalink node: ${name} disconnected after all retry attempts. Cleaning up ${count} player(s)...`,
+      );
+      for (const queue of this.queues.values()) {
+        queue.destroy().catch(() => {});
+      }
+      this._scheduleManualReconnect(name);
+    });
+
     this.shoukaku.on("debug", (name, info) => {
       if (process.env.NODE_ENV !== "production") {
         logger.debug(`Lavalink node: ${name} debug: ${info}`);
       }
     });
+  }
+
+  private _scheduleManualReconnect(nodeName: string) {
+    if (this._reconnectTimers.has(nodeName)) return;
+
+    logger.info(
+      `Scheduling manual reconnect for node "${nodeName}" in ${MANUAL_RECONNECT_INTERVAL_MS / 1000}s...`,
+    );
+
+    const timer = setTimeout(async () => {
+      this._reconnectTimers.delete(nodeName);
+
+      if (this.shoukaku.nodes.has(nodeName)) return; // already back online
+
+      const nodeOption = nodes.find((n) => n.name === nodeName);
+      if (!nodeOption) return;
+
+      logger.info(`Attempting manual reconnect to Lavalink node: "${nodeName}"`);
+      try {
+        this.shoukaku.addNode(nodeOption);
+        // If successful, the "ready" event will fire and cancel future retries
+      } catch (error) {
+        logger.error(`Manual reconnect to node "${nodeName}" failed.`, error);
+        this._scheduleManualReconnect(nodeName); // keep retrying
+      }
+    }, MANUAL_RECONNECT_INTERVAL_MS);
+
+    this._reconnectTimers.set(nodeName, timer);
   }
 
   /**
