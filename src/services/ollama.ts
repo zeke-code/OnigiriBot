@@ -1,60 +1,56 @@
 import axios, { AxiosError } from "axios";
 import logger from "../utils/logger";
+import { ChatMessage } from "./conversationStore";
 
 const OLLAMA_URL = process.env.OLLAMA_URL;
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "dolphin-mixtral:8x7b";
 const OLLAMA_SYSTEM_PROMPT = process.env.OLLAMA_SYSTEM_PROMPT;
 
-interface OllamaResponse {
+interface OllamaChatResponse {
   model: string;
-  created_at: string;
-  response: string;
+  message: { role: string; content: string };
   done: boolean;
 }
 
 /**
- * Sends a prompt to the Ollama API and returns the response.
- * @param prompt The question to ask the AI.
+ * Sends a conversation history to the Ollama chat API and returns the reply.
+ * @param history The full message history for this conversation.
  * @param model The model to use for the response.
- * @returns The AI's response as a string, or an error message.
+ * @returns The AI's response as a string.
  */
 export async function askOllama(
-  prompt: string,
-  model: string = "dolphin-mixtral:8x7b",
+  history: ChatMessage[],
+  model: string = OLLAMA_MODEL,
 ): Promise<string> {
   if (!OLLAMA_URL) {
     logger.error("OLLAMA_URL is not defined in the environment variables.");
     return "The Ollama service is not configured. Please contact the bot administrator.";
   }
 
+  const messages: ChatMessage[] = [];
+
+  if (OLLAMA_SYSTEM_PROMPT) {
+    messages.push({ role: "system", content: OLLAMA_SYSTEM_PROMPT });
+  }
+
+  messages.push(...history);
+
   try {
-    logger.info(`Sending prompt to Ollama model ${model}: "${prompt}"`);
-
-    const payload: {
-      model: string;
-      prompt: string;
-      stream: boolean;
-      system?: string;
-    } = {
-      model: model,
-      prompt: prompt,
-      stream: false,
-    };
-
-    if (OLLAMA_SYSTEM_PROMPT) {
-      payload.system = OLLAMA_SYSTEM_PROMPT;
-    }
-
-    const response = await axios.post<OllamaResponse>(
-      `${OLLAMA_URL}/api/generate`,
-      payload,
+    logger.info(
+      `Sending ${messages.length} message(s) to Ollama model "${model}"`,
     );
 
-    return response.data.response;
+    const response = await axios.post<OllamaChatResponse>(
+      `${OLLAMA_URL}/api/chat`,
+      { model, messages, stream: false },
+    );
+
+    return response.data.message.content;
   } catch (error) {
     const axiosError = error as AxiosError;
     if (axiosError.response) {
       logger.error(
-        `Ollama API responded with status ${axiosError.response.status}: ${axiosError.response.data}`,
+        `Ollama API responded with status ${axiosError.response.status}: ${JSON.stringify(axiosError.response.data)}`,
       );
     } else if (axiosError.request) {
       logger.error(

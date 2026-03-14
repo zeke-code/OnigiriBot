@@ -15,3 +15,6 @@ logs/
 
 # Prisma generated files
 /src/generated/prisma
+
+# Claude config files
+.claude/

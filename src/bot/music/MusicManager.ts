@@ -28,7 +28,10 @@ export class MusicManager {
   public readonly client: ExtendedClient;
   public readonly shoukaku: Shoukaku;
   public readonly queues: Collection<string, GuildQueue>;
-  private readonly _reconnectTimers: Map<string, ReturnType<typeof setTimeout>> = new Map();
+  private readonly _reconnectTimers: Map<
+    string,
+    ReturnType<typeof setTimeout>
+  > = new Map();
 
   constructor(client: ExtendedClient) {
     this.client = client;
@@ -93,7 +96,9 @@ export class MusicManager {
       const nodeOption = nodes.find((n) => n.name === nodeName);
       if (!nodeOption) return;
 
-      logger.info(`Attempting manual reconnect to Lavalink node: "${nodeName}"`);
+      logger.info(
+        `Attempting manual reconnect to Lavalink node: "${nodeName}"`,
+      );
       try {
         this.shoukaku.addNode(nodeOption);
         // If successful, the "ready" event will fire and cancel future retries
