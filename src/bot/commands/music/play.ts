@@ -13,6 +13,7 @@ import { ExtendedClient } from "../../../types/ExtendedClient";
 import { createAddedToQueueEmbed } from "../../music/embedFactories";
 import { Track, LoadType } from "shoukaku";
 import { GuildQueue } from "../../music/GuildQueue";
+import logger from "../../../utils/logger";
 
 export default {
   data: new SlashCommandBuilder()
@@ -54,13 +55,17 @@ export default {
 
     const result = await musicManager.search(query);
 
-    if (
-      !result ||
-      result.loadType === LoadType.EMPTY ||
-      result.loadType === LoadType.ERROR
-    ) {
+    if (!result || result.loadType === LoadType.EMPTY) {
       return interaction.followUp({
         content: "I couldn't find any results for your query.",
+      });
+    }
+
+    if (result.loadType === LoadType.ERROR) {
+      logger.error(`[play] Load error for query "${query}":`, result.data);
+      return interaction.followUp({
+        content:
+          "Something went wrong while trying to fetch your song. Try with a different URL or streaming service.",
       });
     }
 
