@@ -56,6 +56,7 @@ export default {
     const result = await musicManager.search(query);
 
     if (!result || result.loadType === LoadType.EMPTY) {
+      logger.warn(`[play] Empty result for query "${query}". loadType: ${result?.loadType ?? "no response"}`);
       return interaction.followUp({
         content: "I couldn't find any results for your query.",
       });

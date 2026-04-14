@@ -10,12 +10,12 @@ services:
         condition: service_healthy
       lavalink:
         condition: service_healthy
-    restart: unless-stopped
+    restart: always
 
   postgres:
     image: postgres:18-alpine
     container_name: postgres-db
-    restart: unless-stopped
+    restart: always
     env_file:
       - .env
     volumes:
@@ -30,7 +30,7 @@ services:
 
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:4-alpine
-    restart: unless-stopped
+    restart: always
     env_file:
       - .env
     ports:
