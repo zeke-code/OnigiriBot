@@ -7,6 +7,9 @@ import {
 } from "discord.js";
 import logger from "../../../utils/logger";
 
+const COOLDOWN_MS = 30_000;
+const cooldowns = new Map<string, number>();
+
 const whisperCommand = {
   data: new SlashCommandBuilder()
     .setName("whisper")
@@ -23,6 +26,18 @@ const whisperCommand = {
   async execute(interaction: ChatInputCommandInteraction) {
     const messageOption = interaction.options.get("message", true);
     const message = messageOption.value as string;
+
+    const now = Date.now();
+    const lastUsed = cooldowns.get(interaction.user.id) ?? 0;
+    const remaining = COOLDOWN_MS - (now - lastUsed);
+    if (remaining > 0) {
+      await interaction.reply({
+        content: `You're sending whispers too fast! Please wait ${Math.ceil(remaining / 1000)}s.`,
+        ephemeral: true,
+      });
+      return;
+    }
+    cooldowns.set(interaction.user.id, now);
 
     if (!message) {
       await interaction.reply({

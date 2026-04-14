@@ -20,6 +20,16 @@ export default {
     } catch (error) {
       logger.error(`Error executing ${interaction.commandName}`);
       logger.error(error);
+      const errorMessage = { content: "Something went wrong while running this command.", ephemeral: true };
+      try {
+        if (interaction.deferred) {
+          await interaction.editReply(errorMessage);
+        } else if (!interaction.replied) {
+          await interaction.reply(errorMessage);
+        }
+      } catch {
+        // interaction may have already expired
+      }
     }
   },
 };
