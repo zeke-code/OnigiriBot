@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   ChatInputCommandInteraction,
+  GuildMember
 } from "discord.js";
 
 const responses: string[] = [
@@ -45,14 +46,10 @@ const eightBallCommand = {
 
     const embed = new EmbedBuilder()
       .setColor("White")
-      .setAuthor({
-        name: "OnigiriBot",
-        iconURL: "https://i.ibb.co/bFJ5GC1/Oni-Avatar.png",
-      })
-      .setTitle(`🎱 8Ball with ${interaction.member?.user.username}`)
+      .setTitle(`🎱 8Ball with ${(interaction.member as GuildMember)?.displayName ?? interaction.user.username}`)
       .addFields(
-        { name: "Question:", value: `${question}` },
-        { name: "Response:", value: `${response}` },
+      { name: "Question:", value: `${question.value?.toString()}` },
+      { name: "Response:", value: `${response}` },
       );
 
     await interaction.reply({ embeds: [embed] });
