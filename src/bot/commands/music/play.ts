@@ -53,6 +53,23 @@ export default {
     const query = interaction.options.getString("query", true);
     await interaction.deferReply();
 
+    const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
+    const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
+    const isSpotifyQuery = query.includes("spotify");
+    const hasSpotifyCredentials =
+      Boolean(SPOTIFY_CLIENT_ID?.trim()) &&
+      Boolean(SPOTIFY_CLIENT_SECRET?.trim());
+
+    if (isSpotifyQuery && !hasSpotifyCredentials) {
+      logger.error(
+        "[play] Tried to scrape a link from Spotify, but API client secret and ID were not set.",
+      );
+      return interaction.followUp({
+        content:
+          "Spotify links are currently not supported. Retry with a different streaming service.",
+      });
+    }
+
     const result = await musicManager.search(query);
 
     if (!result || result.loadType === LoadType.EMPTY) {
