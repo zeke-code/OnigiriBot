@@ -35,6 +35,7 @@ export class GuildQueue {
   public voiceChannel: VoiceBasedChannel | null = null;
   public nowPlayingMessage: Message | null = null;
   public collector: InteractionCollector<ButtonInteraction> | null = null;
+  private _destroyPromise: Promise<void> | null = null;
 
   constructor(manager: MusicManager, guildId: string) {
     this.manager = manager;
@@ -186,7 +187,14 @@ export class GuildQueue {
     }
   }
 
-  public async destroy() {
+  public destroy(): Promise<void> {
+    if (this._destroyPromise) return this._destroyPromise;
+
+    this._destroyPromise = Promise.resolve().then(() => this._destroy());
+    return this._destroyPromise;
+  }
+
+  private async _destroy() {
     this.tracks = [];
     this.isPlaying = false;
 
@@ -238,7 +246,7 @@ export class GuildQueue {
             });
             if (this.collector) this.collector.stop();
             this._setupCollector(this.nowPlayingMessage);
-          } catch (error) {
+          } catch {
             this.nowPlayingMessage = await this.textChannel.send({
               embeds: [embed],
               components: createMusicButtons(this.isPaused),

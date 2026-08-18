@@ -11,8 +11,9 @@ import {
 } from "discord.js";
 import { ExtendedClient } from "../../../types/ExtendedClient";
 import { createAddedToQueueEmbed } from "../../music/embedFactories";
-import { Track, LoadType } from "shoukaku";
+import { Track, LoadType, LavalinkResponse } from "shoukaku";
 import { GuildQueue } from "../../music/GuildQueue";
+import { LavalinkUnavailableError } from "../../music/MusicManager";
 import logger from "../../../utils/logger";
 
 export default {
@@ -70,12 +71,32 @@ export default {
       });
     }
 
-    const result = await musicManager.search(query);
+    let result: LavalinkResponse;
+    try {
+      result = await musicManager.search(query);
+    } catch (error) {
+      if (error instanceof LavalinkUnavailableError) {
+        logger.warn(`[play] Lavalink is unavailable for query "${query}".`, {
+          error: error.message,
+        });
+        return interaction.followUp({
+          content:
+            "The music service is reconnecting right now. Please try again in a few seconds.",
+        });
+      }
 
-    if (!result || result.loadType === LoadType.EMPTY) {
-      logger.warn(
-        `[play] Empty result for query "${query}". loadType: ${result?.loadType ?? "no response"}`,
-      );
+      logger.error(`[play] Lavalink request failed for query "${query}".`, {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      return interaction.followUp({
+        content:
+          "The music service could not process your request. Please try again shortly.",
+      });
+    }
+
+    if (result.loadType === LoadType.EMPTY) {
+      logger.info(`[play] No matches found for query "${query}".`);
       return interaction.followUp({
         content: "I couldn't find any results for your query.",
       });

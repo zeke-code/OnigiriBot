@@ -1,44 +1,70 @@
 import { Collection } from "discord.js";
-import { Shoukaku, Connectors, NodeOption, ShoukakuOptions } from "shoukaku";
+import {
+  Shoukaku,
+  Connectors,
+  LavalinkResponse,
+  Node as LavalinkNode,
+  NodeOption,
+  ShoukakuOptions,
+} from "shoukaku";
 import { ExtendedClient } from "../../types/ExtendedClient";
 import logger from "../../utils/logger";
 import { GuildQueue } from "./GuildQueue";
-
-const nodes: NodeOption[] = [
-  {
-    name: process.env.LAVALINK_NAME || "main-node",
-    url: `${process.env.LAVALINK_HOST}:${process.env.LAVALINK_PORT}`,
-    auth: process.env.LAVALINK_PASSWORD!,
-    secure: process.env.LAVALINK_SECURE === "true",
-  },
-];
 
 const shoukakuOptions: ShoukakuOptions = {
   moveOnDisconnect: false,
   resume: true,
   resumeTimeout: 60,
-  reconnectTries: 10,
-  reconnectInterval: 20,
-  restTimeout: 10,
+  // Shoukaku 4.3.0 can discard a successful connection if an earlier attempt
+  // failed. Keep its retry window short and let the recovery loop re-add a
+  // failed node until the upstream fix is released.
+  reconnectTries: 3,
+  reconnectInterval: 5,
+  restTimeout: 60,
 };
 
-const MANUAL_RECONNECT_INTERVAL_MS = 30_000;
+const MANUAL_RECONNECT_INTERVAL_MS = 10_000;
+const NODE_RECOVERY_AUDIT_INTERVAL_MS = 15_000;
+const NODE_STATE_NAMES = [
+  "connecting",
+  "connected",
+  "disconnecting",
+  "disconnected",
+] as const;
+
+export class LavalinkUnavailableError extends Error {
+  constructor(nodeStates: string) {
+    super(`No connected Lavalink node is available (${nodeStates}).`);
+    this.name = "LavalinkUnavailableError";
+  }
+}
 
 export class MusicManager {
   public readonly client: ExtendedClient;
   public readonly shoukaku: Shoukaku;
   public readonly queues: Collection<string, GuildQueue>;
-  private readonly _reconnectTimers: Map<
+  private readonly _nodeOptions: NodeOption[];
+  private readonly _watchedNodes = new WeakSet<LavalinkNode>();
+  private readonly _reconnectTimers = new Map<
     string,
     ReturnType<typeof setTimeout>
-  > = new Map();
+  >();
+  private _recoveryAuditTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(client: ExtendedClient) {
     this.client = client;
     this.queues = new Collection();
+    this._nodeOptions = [
+      {
+        name: process.env.LAVALINK_NAME || "main-node",
+        url: `${process.env.LAVALINK_HOST}:${process.env.LAVALINK_PORT}`,
+        auth: process.env.LAVALINK_PASSWORD!,
+        secure: process.env.LAVALINK_SECURE === "true",
+      },
+    ];
     this.shoukaku = new Shoukaku(
       new Connectors.DiscordJS(this.client),
-      nodes,
+      this._nodeOptions,
       shoukakuOptions,
     );
 
@@ -46,7 +72,8 @@ export class MusicManager {
       logger.info(
         `Lavalink node: ${name} is now connected. ${reconnected ? "(Reconnected)" : ""}`,
       );
-      // Cancel any pending manual reconnect for this node
+      this._watchNodeDisconnect(name);
+
       const timer = this._reconnectTimers.get(name);
       if (timer) {
         clearTimeout(timer);
@@ -54,30 +81,82 @@ export class MusicManager {
       }
     });
 
+    this.shoukaku.on("reconnecting", (name, attemptsLeft, interval) => {
+      this._watchNodeDisconnect(name);
+      logger.warn(
+        `Lavalink node: ${name} is reconnecting in ${interval}s (${attemptsLeft} attempt(s) left).`,
+      );
+    });
+
     this.shoukaku.on("error", (name, error) =>
       logger.error(`Lavalink node: ${name} encountered an error.`, error),
     );
 
-    this.shoukaku.on("close", (name, code, reason) =>
+    this.shoukaku.on("close", (name, code, reason) => {
+      // The manager does not forward the node-level "disconnect" event in
+      // Shoukaku 4.3.0, so attach directly while the node is still in its map.
+      this._watchNodeDisconnect(name);
       logger.warn(
         `Lavalink node: ${name} closed with code ${code}. Reason: ${reason || "No reason"}`,
-      ),
-    );
-
-    this.shoukaku.on("disconnect", (name, count) => {
-      logger.error(
-        `Lavalink node: ${name} disconnected after all retry attempts. Cleaning up ${count} player(s)...`,
       );
-      for (const queue of this.queues.values()) {
-        queue.destroy().catch(() => {});
-      }
-      this._scheduleManualReconnect(name);
     });
 
     this.shoukaku.on("debug", (name, info) => {
       if (process.env.NODE_ENV !== "production") {
         logger.debug(`Lavalink node: ${name} debug: ${info}`);
       }
+    });
+
+    const startRecovery = () => this._startNodeRecoveryAudit();
+    if (this.client.isReady()) {
+      startRecovery();
+    } else {
+      this.client.once("clientReady", startRecovery);
+    }
+  }
+
+  private _startNodeRecoveryAudit() {
+    if (this._recoveryAuditTimer) return;
+
+    this._auditNodes();
+    this._recoveryAuditTimer = setInterval(
+      () => this._auditNodes(),
+      NODE_RECOVERY_AUDIT_INTERVAL_MS,
+    );
+    this._recoveryAuditTimer.unref();
+  }
+
+  private _auditNodes() {
+    for (const nodeOption of this._nodeOptions) {
+      const node = this.shoukaku.nodes.get(nodeOption.name);
+      if (node) {
+        this._watchNodeDisconnect(nodeOption.name);
+        continue;
+      }
+
+      logger.warn(
+        `Lavalink node: ${nodeOption.name} is missing from the node pool. Scheduling recovery.`,
+      );
+      this._scheduleManualReconnect(nodeOption.name);
+    }
+  }
+
+  private _watchNodeDisconnect(nodeName: string) {
+    const node = this.shoukaku.nodes.get(nodeName);
+    if (!node || this._watchedNodes.has(node)) return;
+
+    this._watchedNodes.add(node);
+    node.once("disconnect", () => {
+      const affectedQueues = [...this.queues.values()].filter(
+        (queue) => queue.player?.node.name === nodeName,
+      );
+      logger.error(
+        `Lavalink node: ${nodeName} disconnected after all retry attempts. Cleaning up ${affectedQueues.length} queue(s)...`,
+      );
+      void Promise.allSettled(
+        affectedQueues.map((queue) => queue.destroy()),
+      );
+      this._scheduleManualReconnect(nodeName);
     });
   }
 
@@ -88,33 +167,38 @@ export class MusicManager {
       `Scheduling manual reconnect for node "${nodeName}" in ${MANUAL_RECONNECT_INTERVAL_MS / 1000}s...`,
     );
 
-    const timer = setTimeout(async () => {
+    const timer = setTimeout(() => {
       this._reconnectTimers.delete(nodeName);
 
-      if (this.shoukaku.nodes.has(nodeName)) return; // already back online
+      const existingNode = this.shoukaku.nodes.get(nodeName);
+      if (existingNode) {
+        this._watchNodeDisconnect(nodeName);
+        return;
+      }
 
-      const nodeOption = nodes.find((n) => n.name === nodeName);
+      const nodeOption = this._nodeOptions.find((node) => node.name === nodeName);
       if (!nodeOption) return;
 
-      logger.info(
-        `Attempting manual reconnect to Lavalink node: "${nodeName}"`,
-      );
+      logger.info(`Attempting manual reconnect to Lavalink node: "${nodeName}"`);
       try {
         this.shoukaku.addNode(nodeOption);
-        // If successful, the "ready" event will fire and cancel future retries
+        this._watchNodeDisconnect(nodeName);
       } catch (error) {
-        logger.error(`Manual reconnect to node "${nodeName}" failed.`, error);
-        this._scheduleManualReconnect(nodeName); // keep retrying
+        // addNode reports normal asynchronous connection failures through its
+        // events. This catch only covers synchronous configuration failures.
+        logger.error(`Could not add Lavalink node "${nodeName}".`, error);
+        this._scheduleManualReconnect(nodeName);
       }
     }, MANUAL_RECONNECT_INTERVAL_MS);
 
+    timer.unref();
     this._reconnectTimers.set(nodeName, timer);
   }
 
   /**
    * Retrieves or creates a queue for a server (guild)
    * @param guildId
-   * @returns Istance of GuildQueue
+   * @returns Instance of GuildQueue
    */
   public getQueue(guildId: string): GuildQueue {
     let queue = this.queues.get(guildId);
@@ -125,9 +209,24 @@ export class MusicManager {
     return queue;
   }
 
-  public async search(query: string) {
+  public async search(query: string): Promise<LavalinkResponse> {
     const node = this.shoukaku.getIdealNode();
-    if (!node) return null;
-    return node.rest.resolve(query);
+    if (!node) {
+      const nodeStates = [...this.shoukaku.nodes.values()]
+        .map(
+          (candidate) =>
+            `${candidate.name}:${NODE_STATE_NAMES[candidate.state] ?? candidate.state}`,
+        )
+        .join(", ");
+      throw new LavalinkUnavailableError(nodeStates || "node pool is empty");
+    }
+
+    const result = await node.rest.resolve(query);
+    if (!result) {
+      throw new Error(
+        `Lavalink node "${node.name}" returned an empty HTTP response.`,
+      );
+    }
+    return result;
   }
 }
