@@ -278,9 +278,18 @@ export class GuildQueue {
     this.player.on("exception", async (error) => {
       logger.error(`Player exception in guild ${this.guildId}`, error);
       if (this.textChannel) {
-        this.textChannel.send(
-          `An error occurred while playing: \`${error.exception.message}\`. Skipping...`,
-        );
+        try {
+          // Lavalink exception messages may contain a multi-client stack trace
+          // that exceeds Discord's 2,000-character message limit.
+          await this.textChannel.send(
+            "An error occurred while playing this track. Skipping...",
+          );
+        } catch (notificationError) {
+          logger.warn(
+            `Could not report a player exception in guild ${this.guildId}`,
+            notificationError,
+          );
+        }
       }
       await this.skip();
     });
