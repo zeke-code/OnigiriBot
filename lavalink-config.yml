@@ -3,8 +3,10 @@ server:
   address: 0.0.0.0
 lavalink:
   plugins:
-    - dependency: "dev.lavalink.youtube:youtube-plugin:1.18.0"
-      snapshot: false
+    # Includes the IOS client fixes made after 1.18.2. Keep this pinned to an
+    # immutable commit until the fixes are included in a stable release.
+    - dependency: "dev.lavalink.youtube:youtube-plugin:f45bbb7aebfcbc1c553769e04af6cd43afa8b7c3"
+      snapshot: true
     - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:4.8.3"
       repository: "https://maven.lavalink.dev/releases"
       snapshot: false
@@ -31,6 +33,7 @@ plugins:
     allowDirectVideoIds: true
     allowDirectPlaylistIds: true
     clients:
+      - IOS
       - MUSIC
       - ANDROID_VR
       - WEB
