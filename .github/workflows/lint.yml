@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js and install dependencies
         uses: actions/setup-node@v7
         with:
-          node-version: "24.x"
+          node-version: "26.x"
       - run: npm ci
       - name: Run Linter
         run: npm run lint
