@@ -1,4 +1,4 @@
-import type { Interaction } from "discord.js";
+import { MessageFlags, type Interaction } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import interactionCreate from "../../../src/bot/events/interactionCreate";
 
@@ -6,6 +6,11 @@ function createInteraction() {
   const execute = vi.fn().mockResolvedValue(undefined);
   const interaction = {
     isChatInputCommand: () => true,
+    isAutocomplete: () => false,
+    isButton: () => false,
+    isStringSelectMenu: () => false,
+    isMessageComponent: () => false,
+    isRepliable: () => true,
     commandName: "example",
     client: { commands: new Map([["example", { execute }]]) },
     deferred: false,
@@ -59,7 +64,7 @@ describe("interaction dispatch", () => {
 
     expect(interaction.reply).toHaveBeenCalledExactlyOnceWith({
       content: expect.stringContaining("Something went wrong"),
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     });
     expect(interaction.editReply).not.toHaveBeenCalled();
   });

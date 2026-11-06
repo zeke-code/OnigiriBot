@@ -1,166 +1,173 @@
 import {
-  SlashCommandBuilder,
+  AutocompleteInteraction,
   ChatInputCommandInteraction,
-  GuildMember,
-  TextChannel,
+  ContainerBuilder,
   InteractionContextType,
   MessageFlags,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
+  SlashCommandBuilder,
+  TextChannel,
+  TextDisplayBuilder,
 } from "discord.js";
-import { ExtendedClient } from "../../../types/ExtendedClient";
-import { createAddedToQueueEmbed } from "../../music/embedFactories";
-import { Track, LoadType, LavalinkResponse } from "shoukaku";
-import { GuildQueue } from "../../music/GuildQueue";
+import { LoadType, LavalinkResponse } from "shoukaku";
+import type { ExtendedClient } from "../../../types/ExtendedClient";
 import { LavalinkUnavailableError } from "../../music/MusicManager";
-import logger from "../../../utils/logger";
+import { inPlayerVoiceChannel } from "../../music/musicInteractions";
+import { shortText, trackColor, trackTitle } from "../../music/track";
+import { formatTime } from "../../../utils/formatTime";
 
 export default {
   data: new SlashCommandBuilder()
     .setName("play")
-    .setDescription("Play music by writing the link/name of a song/playlist!")
-    .setContexts([InteractionContextType.Guild])
+    .setDescription(
+      "Play a song or playlist; type a title for search suggestions.",
+    )
+    .setContexts(InteractionContextType.Guild)
     .addStringOption((option) =>
       option
         .setName("query")
-        .setDescription("A song title or a URL (YouTube, Spotify, SoundCloud).")
-        .setRequired(true),
+        .setDescription("Song title or YouTube, Spotify, SoundCloud URL")
+        .setRequired(true)
+        .setAutocomplete(true),
     ),
 
-  async execute(interaction: ChatInputCommandInteraction) {
-    if (
-      !interaction.guildId ||
-      !interaction.member ||
-      !(interaction.member instanceof GuildMember)
-    ) {
-      return interaction.reply({
-        content: "This command can only be used in a server.",
-        flags: MessageFlags.Ephemeral,
-      });
+  async autocomplete(interaction: AutocompleteInteraction) {
+    const query = interaction.options.getFocused().trim();
+    if (query.length < 2 || /^https?:\/\//i.test(query)) {
+      await interaction.respond([]);
+      return;
     }
-
-    const client = interaction.client as ExtendedClient;
-    const musicManager = client.musicManager;
-
-    const voiceChannel = interaction.member.voice.channel;
-    if (!voiceChannel) {
-      return interaction.reply({
-        content: "You need to be in a voice channel to play music!",
-        flags: MessageFlags.Ephemeral,
-      });
-    }
-
-    const query = interaction.options.getString("query", true);
-    await interaction.deferReply();
-
-    const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID;
-    const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET;
-    const isSpotifyQuery = query.includes("spotify");
-    const hasSpotifyCredentials =
-      Boolean(SPOTIFY_CLIENT_ID?.trim()) &&
-      Boolean(SPOTIFY_CLIENT_SECRET?.trim());
-
-    if (isSpotifyQuery && !hasSpotifyCredentials) {
-      logger.error(
-        "[play] Tried to scrape a link from Spotify, but API client secret and ID were not set.",
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      // Autocomplete cannot be deferred; leave enough of Discord's 3 seconds to respond.
+      const result = await Promise.race([
+        (interaction.client as ExtendedClient).musicManager.search(query),
+        new Promise<null>((resolve) => {
+          timer = setTimeout(() => resolve(null), 1800);
+        }),
+      ]);
+      const tracks = result?.loadType === LoadType.SEARCH ? result.data : [];
+      const unique = [
+        ...new Map(
+          tracks
+            .filter((track) => track.info.uri && track.info.uri.length <= 100)
+            .map((track) => [track.info.uri!, track]),
+        ).values(),
+      ];
+      await interaction.respond(
+        unique.slice(0, 10).map((track) => ({
+          name: shortText(`${track.info.title} — ${track.info.author}`),
+          value: track.info.uri!,
+        })),
       );
-      return interaction.followUp({
-        content:
-          "Spotify links are currently not supported. Retry with a different streaming service.",
-      });
+    } catch {
+      await interaction.respond([]).catch(() => {});
+    } finally {
+      if (timer) clearTimeout(timer);
     }
+  },
 
+  async execute(interaction: ChatInputCommandInteraction) {
+    await interaction.deferReply();
+    if (
+      !interaction.guild ||
+      !interaction.guildId ||
+      !(interaction.channel instanceof TextChannel)
+    ) {
+      await interaction.editReply("Use /play in a server text channel.");
+      return;
+    }
+    const voice = await interaction.guild.voiceStates
+      .fetch(interaction.user.id, { force: true })
+      .catch(() => null);
+    if (!voice?.channel) {
+      await interaction.editReply("Join a voice channel to play music.");
+      return;
+    }
+    const manager = (interaction.client as ExtendedClient).musicManager;
+    const existing = manager.queues.get(interaction.guildId);
+    if (existing && !(await inPlayerVoiceChannel(interaction, existing))) {
+      await interaction.editReply(
+        "You must join my voice channel to add music.",
+      );
+      return;
+    }
+    const query = interaction.options.getString("query", true).trim();
+    if (
+      /^(?:https?:\/\/)?open\.spotify\.com\//i.test(query) &&
+      (!process.env.SPOTIFY_CLIENT_ID?.trim() ||
+        !process.env.SPOTIFY_CLIENT_SECRET?.trim())
+    ) {
+      await interaction.editReply(
+        "Spotify is not configured. Try a YouTube or SoundCloud link.",
+      );
+      return;
+    }
     let result: LavalinkResponse;
     try {
-      result = await musicManager.search(query);
+      result = await manager.search(query);
     } catch (error) {
-      if (error instanceof LavalinkUnavailableError) {
-        logger.warn(`[play] Lavalink is unavailable for query "${query}".`, {
-          error: error.message,
-        });
-        return interaction.followUp({
-          content:
-            "The music service is reconnecting right now. Please try again in a few seconds.",
-        });
-      }
-
-      logger.error(`[play] Lavalink request failed for query "${query}".`, {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-      });
-      return interaction.followUp({
-        content:
-          "The music service could not process your request. Please try again shortly.",
-      });
+      if (!(error instanceof LavalinkUnavailableError)) throw error;
+      await interaction.editReply(
+        "The music service is reconnecting. Please try again shortly.",
+      );
+      return;
     }
-
-    if (result.loadType === LoadType.EMPTY) {
-      logger.info(`[play] No matches found for query "${query}".`);
-      return interaction.followUp({
-        content: "I couldn't find any results for your query.",
-      });
+    const tracks =
+      result.loadType === LoadType.TRACK
+        ? [result.data]
+        : result.loadType === LoadType.SEARCH
+          ? result.data.slice(0, 1)
+          : result.loadType === LoadType.PLAYLIST
+            ? result.data.tracks
+            : [];
+    if (!tracks.length) {
+      await interaction.editReply(
+        "I couldn't find playable tracks for that query.",
+      );
+      return;
     }
-
-    if (result.loadType === LoadType.ERROR) {
-      logger.error(`[play] Load error for query "${query}":`, result.data);
-      return interaction.followUp({
-        content:
-          "Something went wrong while trying to fetch your song. Try with a different URL or streaming service.",
-      });
-    }
-
-    const queue: GuildQueue = musicManager.getQueue(interaction.guildId);
-    queue.textChannel = interaction.channel as TextChannel;
-
-    if (!queue.player) {
-      await queue.connect(voiceChannel);
-    }
-
-    if (voiceChannel.id !== queue.voiceChannel?.id) {
-      return interaction.followUp({
-        content: "You must be in the same voice channel as me to add songs.",
-      });
-    }
-
-    let tracks: Track[] = [];
-    switch (result.loadType) {
-      case LoadType.TRACK:
-        tracks = [result.data];
-        break;
-      case LoadType.SEARCH:
-        tracks = [result.data[0]];
-        break;
-      case LoadType.PLAYLIST:
-        tracks = result.data.tracks;
-        break;
-    }
-
-    queue.addTracks(tracks);
-
-    const embed = createAddedToQueueEmbed(interaction.client, result);
-
-    const components: ActionRowBuilder<ButtonBuilder>[] = [];
-    if (
-      result.loadType === LoadType.TRACK ||
-      result.loadType === LoadType.SEARCH
-    ) {
-      const trackInfo = tracks[0].info;
-      if (trackInfo.uri && trackInfo.uri.startsWith("http")) {
-        const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setLabel("Listen on Platform")
-            .setStyle(ButtonStyle.Link)
-            .setURL(trackInfo.uri),
+    const queue = manager.getQueue(interaction.guildId);
+    await queue.runExclusive(async () => {
+      // Recheck after resolving the search: another request may have connected the bot.
+      const freshVoice = await interaction
+        .guild!.voiceStates.fetch(interaction.user.id, { force: true })
+        .catch(() => null);
+      if (
+        !freshVoice?.channel ||
+        (queue.player && !(await inPlayerVoiceChannel(interaction, queue)))
+      ) {
+        await interaction.editReply(
+          "Join my voice channel before adding music.",
         );
-        components.push(row);
+        if (!queue.player) await queue.destroy();
+        return;
       }
-    }
-
-    await interaction.followUp({ embeds: [embed], components: components });
-
-    if (!queue.isPlaying) {
-      await queue.play();
-    }
+      if (!queue.textChannel)
+        queue.textChannel = interaction.channel as TextChannel;
+      await queue.connect(freshVoice.channel);
+      const position = queue.tracks.length + 1;
+      const wait = queue.remainingMs;
+      const timing =
+        queue.loopMode === "track" && queue.currentTrack
+          ? "wait depends on track loop"
+          : wait === null
+            ? "wait unknown (live stream)"
+            : `plays in ~${formatTime(wait)}${queue.isPaused ? " after resume" : ""}`;
+      queue.addTracks(tracks, interaction.user.id);
+      const card = new ContainerBuilder()
+        .setAccentColor(trackColor(tracks[0]))
+        .addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            `### Added to queue${tracks.length > 1 ? ` · ${tracks.length} tracks` : ""}\n**${trackTitle(tracks[0])}**\n${queue.isPlaying ? `#${position} in queue · ${timing}` : "Starting playback"}`,
+          ),
+        );
+      await interaction.editReply({
+        flags: MessageFlags.IsComponentsV2,
+        components: [card],
+        allowedMentions: { parse: [] },
+      });
+      if (!queue.isPlaying) await queue.play();
+      else await queue.updateNowPlayingMessage();
+    });
   },
 };

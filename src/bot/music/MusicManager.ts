@@ -6,6 +6,8 @@ import {
   Node as LavalinkNode,
   NodeOption,
   ShoukakuOptions,
+  LoadType,
+  Track,
 } from "shoukaku";
 import { ExtendedClient } from "../../types/ExtendedClient";
 import logger from "../../utils/logger";
@@ -153,9 +155,7 @@ export class MusicManager {
       logger.error(
         `Lavalink node: ${nodeName} disconnected after all retry attempts. Cleaning up ${affectedQueues.length} queue(s)...`,
       );
-      void Promise.allSettled(
-        affectedQueues.map((queue) => queue.destroy()),
-      );
+      void Promise.allSettled(affectedQueues.map((queue) => queue.destroy()));
       this._scheduleManualReconnect(nodeName);
     });
   }
@@ -176,10 +176,14 @@ export class MusicManager {
         return;
       }
 
-      const nodeOption = this._nodeOptions.find((node) => node.name === nodeName);
+      const nodeOption = this._nodeOptions.find(
+        (node) => node.name === nodeName,
+      );
       if (!nodeOption) return;
 
-      logger.info(`Attempting manual reconnect to Lavalink node: "${nodeName}"`);
+      logger.info(
+        `Attempting manual reconnect to Lavalink node: "${nodeName}"`,
+      );
       try {
         this.shoukaku.addNode(nodeOption);
         this._watchNodeDisconnect(nodeName);
@@ -221,12 +225,49 @@ export class MusicManager {
       throw new LavalinkUnavailableError(nodeStates || "node pool is empty");
     }
 
-    const result = await node.rest.resolve(query);
+    const identifier = /^(https?:\/\/|[a-z]+search:)/i.test(query)
+      ? query
+      : `ytsearch:${query}`;
+    const result = await node.rest.resolve(identifier);
     if (!result) {
       throw new Error(
         `Lavalink node "${node.name}" returned an empty HTTP response.`,
       );
     }
     return result;
+  }
+
+  public async relatedTrack(
+    seed: Track,
+    history: Track[],
+  ): Promise<Track | null> {
+    const seen = new Set(
+      [...history, seed].map(
+        (track) => `${track.info.sourceName}:${track.info.identifier}`,
+      ),
+    );
+    const queries =
+      seed.info.sourceName === "youtube"
+        ? [
+            `https://www.youtube.com/watch?v=${encodeURIComponent(seed.info.identifier)}&list=RD${encodeURIComponent(seed.info.identifier)}`,
+            `${seed.info.author} music`,
+          ]
+        : [`${seed.info.author} music`];
+    for (const query of queries) {
+      const result = await this.search(query);
+      const tracks =
+        result.loadType === LoadType.PLAYLIST
+          ? result.data.tracks
+          : result.loadType === LoadType.SEARCH
+            ? result.data
+            : [];
+      const next = tracks.find(
+        (track) =>
+          !track.info.isStream &&
+          !seen.has(`${track.info.sourceName}:${track.info.identifier}`),
+      );
+      if (next) return next;
+    }
+    return null;
   }
 }

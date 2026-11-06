@@ -6,4 +6,7 @@ export const MUSIC_BUTTONS = {
   VOLUME_UP: "music_volup",
   VOLUME_DOWN: "music_voldown",
   SHUFFLE: "music_shuffle",
+  LOOP: "music_loop",
+  QUEUE: "music_queue",
+  AUTOPLAY: "music_autoplay",
 } as const;
