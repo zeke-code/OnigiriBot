@@ -94,6 +94,22 @@ To add OnigiriBot to your server, create an invite link:
 - Under “Bot Permissions”, select the permissions you want to give the bot (keep in mind that the bot might require permissions based on what you want it to do. I suggest starting out with it being able to read and write messages, join voice channels and speak to let the music service do its thing.)
 - Use the generated URL to invite OnigiriBot to your server by accessing the URL on your browser.
 
+## Testing
+
+Use Node.js 24 and install dependencies with `npm ci`, then run:
+
+```sh
+npm test
+```
+
+This type-checks the tests and runs the Vitest suite once. Use
+`npm run test:watch` to rerun affected tests while developing, or
+`npm run test:typecheck` to check test types separately.
+
+Tests live in `tests/` and run without a `.env` file, Discord token, database,
+Lavalink server, or Ollama server. External calls use test doubles. GitHub Actions
+runs the suite before building the bot.
+
 ## Notes
 
 If you encounter any issues, feel free to open an issue on the GitHub repository.

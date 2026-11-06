@@ -1,7 +1,10 @@
 import fs from "fs";
 import path from "path";
+import { createRequire } from "node:module";
 import { Client } from "discord.js";
 import logger from "../../utils/logger";
+
+const requireModule = createRequire(__filename);
 
 interface Event {
   name: string;
@@ -20,7 +23,7 @@ async function readEvents(client: Client, directory: string): Promise<void> {
       await readEvents(client, filePath);
     } else if (file.endsWith(".ts") || file.endsWith(".js")) {
       try {
-        const eventModule = await import(filePath);
+        const eventModule = requireModule(filePath);
 
         const event: Event = eventModule.default || eventModule;
 

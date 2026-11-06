@@ -7,6 +7,10 @@ build/
 # Nodes
 node_modules/
 
+# Test reports and artifacts
+.vitest/
+coverage/
+
 # Logs folder
 logs/
 

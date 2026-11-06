@@ -1,8 +1,11 @@
 import { REST, Routes } from "discord.js";
 import fs from "node:fs";
 import path from "node:path";
+import { createRequire } from "node:module";
 import logger from "./logger";
 import { config } from "dotenv";
+
+const requireModule = createRequire(__filename);
 
 config({ path: path.resolve(__dirname, "../../.env") });
 
@@ -32,7 +35,7 @@ const rest = new REST({ version: "10" }).setToken(token);
       for (const file of commandFiles) {
         const filePath = path.join(commandsPath, file);
 
-        const commandModule = await import(filePath);
+        const commandModule = requireModule(filePath);
         const command = commandModule.default || commandModule;
 
         if ("data" in command && "execute" in command) {

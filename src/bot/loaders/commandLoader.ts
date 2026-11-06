@@ -1,8 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { createRequire } from "node:module";
 import { ExtendedClient } from "../../types/ExtendedClient";
 import { Command } from "../../types/Command";
 import logger from "../../utils/logger";
+
+// Load CommonJS commands in both ts-node and the compiled bot.
+const requireModule = createRequire(__filename);
 
 async function loadCommands(
   client: ExtendedClient,
@@ -20,7 +24,7 @@ async function loadCommands(
       const filePath = path.join(commandsFolderPath, file);
 
       try {
-        const commandModule = await import(filePath);
+        const commandModule = requireModule(filePath);
 
         const command: Command | undefined =
           commandModule.default || commandModule;
