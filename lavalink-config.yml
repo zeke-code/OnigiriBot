@@ -39,6 +39,12 @@ plugins:
       - WEB
       - WEBEMBEDDED
       - TVHTML5_SIMPLY
+    clientOptions:
+      IOS:
+        # IOS currently returns empty searches without trying the next client.
+        # Keep its working playback support, but search through other clients.
+        # https://github.com/lavalink-devs/youtube-source/issues/250
+        searching: false
   lavasrc:
     providers:
       - 'ytsearch:"%ISRC%"'
